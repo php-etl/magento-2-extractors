@@ -19,7 +19,7 @@
     "require": {
         "php": "^8.1",
         "php-etl/pipeline-contracts": "^0.3.3",
-        "psr/log": "^3.0",
+        "psr/log": "^1.0",
         "php-etl/magento-v2-api-client": "0.1.x-dev",
         "nyholm/psr7": "^1.5",
         "php-etl/bucket": "^0.2.0",
