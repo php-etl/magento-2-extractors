@@ -1,5 +1,5 @@
 {
-    "name": "php-etl/magento-v2-extractors",
+    "name": "php-etl/magento-v2-flow",
     "autoload": {
         "psr-4": {
             "Kiboko\\Magento\\V2\\Extractor\\": "src/"
