@@ -2,21 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Kiboko\Magento\V2\Extractor;
+namespace Kiboko\Magento\v2_3\Extractor;
 
-final class CustomersExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterface
+use Kiboko\Magento\v2_3\Client;
+
+final class ProductsExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterface
 {
-    public function __construct(private \Psr\Log\LoggerInterface $logger, private \Kiboko\Magento\V2\Client $client)
+    public function __construct(private \Psr\Log\LoggerInterface $logger, private Client $client)
     {
     }
 
     public function extract(): iterable
     {
         try {
-            $response = $this->client->customerCustomerRepositoryV1GetListGet(queryParameters: [
+            $response = $this->client->catalogProductRepositoryV1GetListGet(queryParameters: [
                 'searchCriteria[currentPage]' => 1,
                 'searchCriteria[pageSize]' => 100,
-            ], fetch: \Kiboko\Magento\V2\Client::FETCH_RESPONSE);
+            ], fetch: Client::FETCH_RESPONSE);
 
             if ($response instanceof \Psr\Http\Message\ResponseInterface) {
                 if ($response->getStatusCode() !== 200) {

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Kiboko\Magento\V2\Extractor;
 
-use Kiboko\Component\Bucket\AcceptanceResultBucket;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
-use Kiboko\Magento\V2\Client;
+use Kiboko\Magento\v2_3\Extractor\OrdersExtractor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
@@ -18,7 +17,7 @@ final class OrdersExtractorTest extends TestCase
 
     public function testIsSuccessful(): void
     {
-        $client = $this->createMock(Client::class);
+        $client = $this->createMock(\Kiboko\Magento\v2_3\Client::class);
         $client
             ->expects($this->once())
             ->method('salesOrderRepositoryV1GetListGet')
@@ -38,7 +37,7 @@ final class OrdersExtractorTest extends TestCase
                 )
             );
 
-        $extractor = new \Kiboko\Magento\V2\Extractor\OrdersExtractor(
+        $extractor = new OrdersExtractor(
             new NullLogger(),
             $client,
         );

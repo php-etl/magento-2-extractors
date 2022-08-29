@@ -7,7 +7,8 @@ namespace Tests\Kiboko\Magento\V2\Extractor;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
-use Kiboko\Magento\V2\Client;
+use Kiboko\Magento\v2_3\Client;
+use Kiboko\Magento\v2_3\Extractor\ProductsExtractor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
@@ -37,7 +38,7 @@ final class ProductsExtractorTest extends TestCase
                 )
             );
 
-        $extractor = new \Kiboko\Magento\V2\Extractor\ProductsExtractor(
+        $extractor = new ProductsExtractor(
             new NullLogger(),
             $client,
         );

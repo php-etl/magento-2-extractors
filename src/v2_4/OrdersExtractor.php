@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kiboko\Magento\V2\Extractor;
+namespace Kiboko\Magento\v2_4\Extractor;
+
+use Kiboko\Magento\v2_4\Client;
 
 final class OrdersExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterface
 {
-    public function __construct(private \Psr\Log\LoggerInterface $logger, private \Kiboko\Magento\V2\Client $client)
+    public function __construct(private \Psr\Log\LoggerInterface $logger, private Client $client)
     {
     }
 
@@ -16,7 +18,7 @@ final class OrdersExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterf
             $response = $this->client->salesOrderRepositoryV1GetListGet(queryParameters: [
                 'searchCriteria[currentPage]' => 1,
                 'searchCriteria[pageSize]' => 100,
-            ], fetch: \Kiboko\Magento\V2\Client::FETCH_RESPONSE);
+            ], fetch: Client::FETCH_RESPONSE);
 
             if ($response instanceof \Psr\Http\Message\ResponseInterface) {
                 if ($response->getStatusCode() !== 200) {
