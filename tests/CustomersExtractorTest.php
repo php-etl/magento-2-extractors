@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Kiboko\Magento\V2\Extractor;
 
+use Kiboko\Component\Flow\Magento2\CustomerExtractor;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
 use Kiboko\Magento\v2_3\Client;
-use Kiboko\Magento\v2_3\Extractor\CustomersExtractor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
@@ -38,7 +38,7 @@ final class CustomersExtractorTest extends TestCase
                 )
             );
 
-        $extractor = new CustomersExtractor(
+        $extractor = new CustomerExtractor(
             new NullLogger(),
             $client,
         );
