@@ -8,34 +8,33 @@ use Kiboko\Component\Flow\Magento2\CustomerExtractor;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
-use Kiboko\Magento\v2_3\Client;
+use Kiboko\Magento\V2_3\Client;
+use Kiboko\Magento\V2_3\Model\CustomerDataCustomerInterface;
+use Kiboko\Magento\V2_3\Model\CustomerDataCustomerSearchResultsInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
-final class CustomersExtractorTest extends TestCase
+final class CustomerExtractorTest extends TestCase
 {
     use ExtractorAssertTrait;
 
     public function testIsSuccessful(): void
     {
+        $customer = (new CustomerDataCustomerInterface())
+            ->setFirstname('John')
+            ->setLastname('Doe')
+            ->setEmail('johndoe@example.com');
+
         $client = $this->createMock(Client::class);
         $client
             ->expects($this->once())
             ->method('customerCustomerRepositoryV1GetListGet')
             ->willReturn(
-                new \GuzzleHttp\Psr7\Response(
-                    200,
-                    [],
-                    json_encode([
-                        'items' => [
-                            [
-                                'firstname' => 'John',
-                                'lastname' => 'Doe',
-                                'email' => 'johndoe@example.com',
-                            ]
-                        ]
-                    ], JSON_THROW_ON_ERROR)
-                )
+                (new CustomerDataCustomerSearchResultsInterface())
+                    ->setItems([
+                        $customer
+                    ])
+                    ->setTotalCount(1)
             );
 
         $extractor = new CustomerExtractor(
@@ -45,11 +44,7 @@ final class CustomersExtractorTest extends TestCase
 
         $this->assertExtractorExtractsExactly(
             [
-                [
-                    'firstname' => 'John',
-                    'lastname' => 'Doe',
-                    'email' => 'johndoe@example.com',
-                ]
+                $customer
             ],
             $extractor
         );

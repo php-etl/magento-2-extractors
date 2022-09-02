@@ -8,33 +8,32 @@ use Kiboko\Component\Flow\Magento2\OrderExtractor;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
+use Kiboko\Magento\V2_3\Model\SalesDataOrderInterface;
+use Kiboko\Magento\V2_3\Model\SalesDataOrderSearchResultInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
-final class OrdersExtractorTest extends TestCase
+final class OrderExtractorTest extends TestCase
 {
     use ExtractorAssertTrait;
 
     public function testIsSuccessful(): void
     {
-        $client = $this->createMock(\Kiboko\Magento\v2_3\Client::class);
+        $order = (new SalesDataOrderInterface())
+            ->setEntityId(1)
+            ->setCustomerId(10)
+            ->setTotalQtyOrdered(3);
+
+        $client = $this->createMock(\Kiboko\Magento\V2_3\Client::class);
         $client
             ->expects($this->once())
             ->method('salesOrderRepositoryV1GetListGet')
             ->willReturn(
-                new \GuzzleHttp\Psr7\Response(
-                    200,
-                    [],
-                    json_encode([
-                        'items' => [
-                            [
-                                'customer_email' => "johndoe@example.com",
-                                'customer_firstname' => "John",
-                                'state' => 'canceled',
-                            ]
-                        ]
-                    ], JSON_THROW_ON_ERROR)
-                )
+                (new SalesDataOrderSearchResultInterface)
+                    ->setItems([
+                        $order
+                    ])
+                    ->setTotalCount(1)
             );
 
         $extractor = new OrderExtractor(
@@ -44,11 +43,7 @@ final class OrdersExtractorTest extends TestCase
 
         $this->assertExtractorExtractsExactly(
             [
-                [
-                    'customer_email' => "johndoe@example.com",
-                    'customer_firstname' => "John",
-                    'state' => 'canceled',
-                ]
+                $order
             ],
             $extractor
         );

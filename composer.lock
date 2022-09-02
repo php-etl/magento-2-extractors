@@ -883,12 +883,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-etl/magento2-api-client.git",
-                "reference": "2b4b978b68e15f82de454187051a3c7116edc9e1"
+                "reference": "c11c9bfe88f8b4e0dbdd5fa7bb6e3fbbd8826b58"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/2b4b978b68e15f82de454187051a3c7116edc9e1",
-                "reference": "2b4b978b68e15f82de454187051a3c7116edc9e1",
+                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/c11c9bfe88f8b4e0dbdd5fa7bb6e3fbbd8826b58",
+                "reference": "c11c9bfe88f8b4e0dbdd5fa7bb6e3fbbd8826b58",
                 "shasum": ""
             },
             "require": {
@@ -908,10 +908,10 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Kiboko\\Magento\\v2_1\\": "src/v2_1",
-                    "Kiboko\\Magento\\v2_2\\": "src/v2_2",
-                    "Kiboko\\Magento\\v2_3\\": "src/v2_3",
-                    "Kiboko\\Magento\\v2_4\\": "src/v2_4"
+                    "Kiboko\\Magento\\V2_1\\": "src/v2_1",
+                    "Kiboko\\Magento\\V2_2\\": "src/v2_2",
+                    "Kiboko\\Magento\\V2_3\\": "src/v2_3",
+                    "Kiboko\\Magento\\V2_4\\": "src/v2_4"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -929,7 +929,7 @@
                 "issues": "https://github.com/php-etl/magento2-api-client/issues",
                 "source": "https://github.com/php-etl/magento2-api-client/tree/main"
             },
-            "time": "2022-09-01T09:22:43+00:00"
+            "time": "2022-09-02T08:54:54+00:00"
         },
         {
             "name": "php-etl/pipeline-contracts",
