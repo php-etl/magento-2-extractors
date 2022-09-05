@@ -2,6 +2,8 @@
 
 namespace Kiboko\Component\Flow\Magento2;
 
+use phpDocumentor\Reflection\Types\This;
+
 class FilterGroup
 {
     private array $filters = [];
@@ -13,13 +15,22 @@ class FilterGroup
 
     public function withFilter(string $field, string $operator, mixed $value): self
     {
-        $this->filters = [
-            '[filters][0][field]' => $field,
-            '[filters][0][value]' => $value,
-            '[filters][0][condition_type]' => $operator,
+        $this->filters[] = [
+            'field' => $field,
+            'value' => $value,
+            'condition_type' => $operator,
         ];
 
         return $this;
+    }
+
+    public function compileFilters(int $groupIndex = 0): array
+    {
+        return array_merge(...array_map(fn (array $item, int $key) => [
+            sprintf('searchCriteria[filter_groups][%s][filters][%s][field]', $groupIndex, $key) => $item['field'],
+            sprintf('searchCriteria[filter_groups][%s][filters][%s][value]', $groupIndex, $key) => $item['value'],
+            sprintf('searchCriteria[filter_groups][%s][filters][%s][condition_type]', $groupIndex, $key) => $item['condition_type'],
+        ], $this->filters, array_keys($this->filters)));
     }
 
     public function greaterThan(string $field, mixed $value): self

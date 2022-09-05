@@ -18,14 +18,9 @@ final class CustomerExtractor implements \Kiboko\Contract\Pipeline\ExtractorInte
         private \Psr\Log\LoggerInterface $logger,
         private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
         private int $pageSize = 100,
+        /** @var FilterGroup[] $filters */
+        private array $filters = [],
     ) {
-    }
-
-    public function withFilter(string $filter, mixed $value): self
-    {
-        $this->queryParameters[$filter] = $value;
-
-        return $this;
     }
 
     private function compileQueryParameters(int $currentPage = 1): array
@@ -34,7 +29,9 @@ final class CustomerExtractor implements \Kiboko\Contract\Pipeline\ExtractorInte
         $parameters['searchCriteria[currentPage]'] = $currentPage;
         $parameters['searchCriteria[pageSize]'] = $this->pageSize;
 
-        return $parameters;
+        $filters = array_map(fn (FilterGroup $item, int $key) => $item->compileFilters($key), $this->filters, array_keys($this->filters));
+
+        return array_merge($parameters, ...$filters);
     }
 
     public function extract(): iterable

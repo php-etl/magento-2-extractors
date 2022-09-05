@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Kiboko\Magento\V2\Extractor;
 
 use Kiboko\Component\Flow\Magento2\CustomerExtractor;
+use Kiboko\Component\Flow\Magento2\FilterGroup;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
@@ -25,6 +26,11 @@ final class CustomerExtractorTest extends TestCase
             ->setLastname('Doe')
             ->setEmail('johndoe@example.com');
 
+        $customer2 = (new CustomerDataCustomerInterface())
+            ->setFirstname('Seb')
+            ->setLastname('Parrat')
+            ->setEmail('seb@com');
+
         $client = $this->createMock(Client::class);
         $client
             ->expects($this->once())
@@ -32,7 +38,8 @@ final class CustomerExtractorTest extends TestCase
             ->willReturn(
                 (new CustomerDataCustomerSearchResultsInterface())
                     ->setItems([
-                        $customer
+                        $customer,
+                        $customer2,
                     ])
                     ->setTotalCount(1)
             );
@@ -40,11 +47,17 @@ final class CustomerExtractorTest extends TestCase
         $extractor = new CustomerExtractor(
             new NullLogger(),
             $client,
+            1,
+            [
+                (new FilterGroup())->withFilter('updated_at', 'eq', '2022-09-05'),
+                (new FilterGroup())->withFilter('active', 'eq', true),
+            ]
         );
 
         $this->assertExtractorExtractsExactly(
             [
-                $customer
+                $customer,
+                $customer2
             ],
             $extractor
         );
