@@ -7,8 +7,6 @@ namespace Kiboko\Component\Flow\Magento2;
 use Kiboko\Component\Bucket\AcceptanceResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Bucket\ResultBucketInterface;
-use Kiboko\Magento\V2_1\Model\CustomerDataCustomerInterface;
-use Kiboko\Magento\V2_1\Model\CustomerDataCustomerSearchResultsInterface;
 
 final class CustomerExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterface
 {
