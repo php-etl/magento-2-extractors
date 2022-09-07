@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kiboko\Component\Flow\Magento2;
 
 use Kiboko\Component\Bucket\AcceptanceResultBucket;
+use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Bucket\ResultBucketInterface;
 
 final class OrderExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterface
@@ -38,6 +39,14 @@ final class OrderExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterfa
                 queryParameters: $this->compileQueryParameters(),
             );
 
+            if (!$response instanceof \Kiboko\Magento\V2_1\Model\CustomerDataCustomerSearchResultsInterface
+                || !$response instanceof \Kiboko\Magento\V2_2\Model\CustomerDataCustomerSearchResultsInterface
+                || !$response instanceof \Kiboko\Magento\V2_3\Model\CustomerDataCustomerSearchResultsInterface
+                || !$response instanceof \Kiboko\Magento\V2_4\Model\CustomerDataCustomerSearchResultsInterface
+            ) {
+                return;
+            }
+
             yield $this->processResponse($response);
 
             $currentPage = 1;
@@ -61,7 +70,7 @@ final class OrderExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterfa
             || $response instanceof \Kiboko\Magento\V2_3\Model\ErrorResponse
             || $response instanceof \Kiboko\Magento\V2_4\Model\ErrorResponse
         ) {
-            throw new \RuntimeException($response->getMessage(), previous: ['exception' => $response]);
+            return new RejectionResultBucket($response);
         }
 
         return new AcceptanceResultBucket(...$response->getItems());

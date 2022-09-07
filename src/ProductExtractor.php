@@ -39,6 +39,14 @@ final class ProductExtractor implements \Kiboko\Contract\Pipeline\ExtractorInter
                 queryParameters: $this->compileQueryParameters(),
             );
 
+            if (!$response instanceof \Kiboko\Magento\V2_1\Model\CatalogDataProductSearchResultsInterface
+                || !$response instanceof \Kiboko\Magento\V2_2\Model\CatalogDataProductSearchResultsInterface
+                || !$response instanceof \Kiboko\Magento\V2_3\Model\CatalogDataProductSearchResultsInterface
+                || !$response instanceof \Kiboko\Magento\V2_4\Model\CatalogDataProductSearchResultsInterface
+            ) {
+                return;
+            }
+
             yield $this->processResponse($response);
 
             $currentPage = 1;
@@ -62,7 +70,7 @@ final class ProductExtractor implements \Kiboko\Contract\Pipeline\ExtractorInter
             || $response instanceof \Kiboko\Magento\V2_3\Model\ErrorResponse
             || $response instanceof \Kiboko\Magento\V2_4\Model\ErrorResponse
         ) {
-            throw new \RuntimeException($response->getMessage(), previous: ['exception' => $response]);
+            return new RejectionResultBucket($response);
         }
 
         return new AcceptanceResultBucket(...$response->getItems());
