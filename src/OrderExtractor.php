@@ -56,6 +56,14 @@ final class OrderExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterfa
 
     private function processResponse($response): ResultBucketInterface
     {
+        if ($response instanceof \Kiboko\Magento\V2_1\Model\ErrorResponse
+            || $response instanceof \Kiboko\Magento\V2_2\Model\ErrorResponse
+            || $response instanceof \Kiboko\Magento\V2_3\Model\ErrorResponse
+            || $response instanceof \Kiboko\Magento\V2_4\Model\ErrorResponse
+        ) {
+            throw new \RuntimeException($response->getMessage(), previous: ['exception' => $response]);
+        }
+
         return new AcceptanceResultBucket(...$response->getItems());
     }
 }
