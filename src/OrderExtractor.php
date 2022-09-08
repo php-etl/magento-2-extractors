@@ -40,9 +40,9 @@ final class OrderExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterfa
             );
 
             if (!$response instanceof \Kiboko\Magento\V2_1\Model\SalesDataOrderSearchResultInterface
-                || !$response instanceof \Kiboko\Magento\V2_2\Model\SalesDataOrderSearchResultInterface
-                || !$response instanceof \Kiboko\Magento\V2_3\Model\SalesDataOrderSearchResultInterface
-                || !$response instanceof \Kiboko\Magento\V2_4\Model\SalesDataOrderSearchResultInterface
+                && !$response instanceof \Kiboko\Magento\V2_2\Model\SalesDataOrderSearchResultInterface
+                && !$response instanceof \Kiboko\Magento\V2_3\Model\SalesDataOrderSearchResultInterface
+                && !$response instanceof \Kiboko\Magento\V2_4\Model\SalesDataOrderSearchResultInterface
             ) {
                 return;
             }

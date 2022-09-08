@@ -40,9 +40,9 @@ final class ProductExtractor implements \Kiboko\Contract\Pipeline\ExtractorInter
             );
 
             if (!$response instanceof \Kiboko\Magento\V2_1\Model\CatalogDataProductSearchResultsInterface
-                || !$response instanceof \Kiboko\Magento\V2_2\Model\CatalogDataProductSearchResultsInterface
-                || !$response instanceof \Kiboko\Magento\V2_3\Model\CatalogDataProductSearchResultsInterface
-                || !$response instanceof \Kiboko\Magento\V2_4\Model\CatalogDataProductSearchResultsInterface
+                && !$response instanceof \Kiboko\Magento\V2_2\Model\CatalogDataProductSearchResultsInterface
+                && !$response instanceof \Kiboko\Magento\V2_3\Model\CatalogDataProductSearchResultsInterface
+                && !$response instanceof \Kiboko\Magento\V2_4\Model\CatalogDataProductSearchResultsInterface
             ) {
                 return;
             }
