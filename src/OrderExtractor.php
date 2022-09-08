@@ -39,10 +39,10 @@ final class OrderExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterfa
                 queryParameters: $this->compileQueryParameters(),
             );
 
-            if (!$response instanceof \Kiboko\Magento\V2_1\Model\CustomerDataCustomerSearchResultsInterface
-                || !$response instanceof \Kiboko\Magento\V2_2\Model\CustomerDataCustomerSearchResultsInterface
-                || !$response instanceof \Kiboko\Magento\V2_3\Model\CustomerDataCustomerSearchResultsInterface
-                || !$response instanceof \Kiboko\Magento\V2_4\Model\CustomerDataCustomerSearchResultsInterface
+            if (!$response instanceof \Kiboko\Magento\V2_1\Model\SalesDataOrderSearchResultInterface
+                || !$response instanceof \Kiboko\Magento\V2_2\Model\SalesDataOrderSearchResultInterface
+                || !$response instanceof \Kiboko\Magento\V2_3\Model\SalesDataOrderSearchResultInterface
+                || !$response instanceof \Kiboko\Magento\V2_4\Model\SalesDataOrderSearchResultInterface
             ) {
                 return;
             }
