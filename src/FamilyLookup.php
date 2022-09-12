@@ -22,32 +22,30 @@ final class FamilyLookup implements TransformerInterface
             $bucket = new ComplexResultBucket();
             $output = $line;
 
-            (function ($input, $bucket) use ($output) {
-                try {
-                    $lookup = $this->client->catalogCategoryAttributeOptionManagementV1GetItemsGet(
-                        attributeCode: $input["Famille_de_Produit"],
-                    );
+            try {
+                $lookup = $this->client->catalogCategoryAttributeOptionManagementV1GetItemsGet(
+                    attributeCode: $line["Famille_de_Produit"],
+                );
 
-                    if (!$lookup instanceof \Kiboko\Magento\V2_1\Model\EavDataAttributeOptionInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_2\Model\EavDataAttributeOptionInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_3\Model\EavDataAttributeOptionInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_4\Model\EavDataAttributeOptionInterface
-                    ) {
-                        return;
-                    }
-                } catch (\RuntimeException $exception) {
-                    $this->logger->warning($exception->getMessage(), ['exception' => $exception, 'item' => $input]);
-                    $bucket->reject($input);
+                if (!$lookup instanceof \Kiboko\Magento\V2_1\Model\EavDataAttributeOptionInterface
+                    && !$lookup instanceof \Kiboko\Magento\V2_2\Model\EavDataAttributeOptionInterface
+                    && !$lookup instanceof \Kiboko\Magento\V2_3\Model\EavDataAttributeOptionInterface
+                    && !$lookup instanceof \Kiboko\Magento\V2_4\Model\EavDataAttributeOptionInterface
+                ) {
                     return;
                 }
+            } catch (\RuntimeException $exception) {
+                $this->logger->warning($exception->getMessage(), ['exception' => $exception, 'item' => $line]);
+                $bucket->reject($line);
+                return;
+            }
 
-                $output = (function () use ($lookup, $output) {
-                    $output['Famille_de_Produit'] = $lookup->getLabel();
-                    return $output;
-                })();
+            $output = (function () use ($lookup, $output) {
+                $output['Famille_de_Produit'] = $lookup->getLabel();
+                return $output;
+            })();
 
-                $bucket->accept($output);
-            })($line, $bucket);
+            $bucket->accept($output);
         } while ($line = (yield $bucket));
     }
 }
