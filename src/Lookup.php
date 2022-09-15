@@ -9,14 +9,9 @@ use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Mapping\CompiledMapperInterface;
 use Kiboko\Contract\Pipeline\TransformerInterface;
 use Psr\SimpleCache\CacheInterface;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
 
 final class Lookup implements TransformerInterface
 {
-    private SerializerInterface $serializer;
 
     public function __construct(
         private \Psr\Log\LoggerInterface $logger,
@@ -25,15 +20,8 @@ final class Lookup implements TransformerInterface
         private string $cacheKey,
         private CompiledMapperInterface $mapper,
         private string $mappingField,
+        private string $attributeCode,
     ) {
-        $this->serializer = new Serializer(
-            normalizers: [
-                new ObjectNormalizer()
-            ],
-            encoders: [
-                new JsonEncoder()
-            ]
-        );
     }
 
     public function transform(): \Generator
@@ -45,7 +33,7 @@ final class Lookup implements TransformerInterface
 
                 if ($lookup === null) {
                     $lookup = $this->client->catalogCategoryAttributeOptionManagementV1GetItemsGet(
-                        attributeCode: $line[$this->mappingField],
+                        attributeCode: $this->attributeCode,
                     );
 
                     if (!$lookup instanceof \Kiboko\Magento\V2_1\Model\EavDataAttributeOptionInterface
@@ -58,7 +46,7 @@ final class Lookup implements TransformerInterface
 
                     $this->cache->set(
                         sprintf($this->cacheKey, $line[$this->mappingField]),
-                        $this->serializer->serialize($lookup),
+                        $lookup,
                     );
                 }
             } catch (\RuntimeException $exception) {

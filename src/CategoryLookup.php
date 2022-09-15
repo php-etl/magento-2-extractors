@@ -16,8 +16,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class CategoryLookup implements TransformerInterface
 {
-    private SerializerInterface $serializer;
-
     public function __construct(
         private \Psr\Log\LoggerInterface $logger,
         private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
@@ -26,14 +24,6 @@ final class CategoryLookup implements TransformerInterface
         private CompiledMapperInterface $mapper,
         private string $mappingField,
     ) {
-        $this->serializer = new Serializer(
-            normalizers: [
-                new ObjectNormalizer()
-            ],
-            encoders: [
-                new JsonEncoder()
-            ]
-        );
     }
 
     public function transform(): \Generator
@@ -45,7 +35,7 @@ final class CategoryLookup implements TransformerInterface
 
                 if ($lookup === null) {
                     $lookup = $this->client->catalogCategoryRepositoryV1GetGet(
-                        categoryId: $line[$this->mappingField],
+                        categoryId: (int) $line[$this->mappingField],
                     );
 
                     if (!$lookup instanceof \Kiboko\Magento\V2_1\Model\CatalogDataCategoryInterface
@@ -58,7 +48,7 @@ final class CategoryLookup implements TransformerInterface
 
                     $this->cache->set(
                         sprintf($this->cacheKey, $line[$this->mappingField]),
-                        $this->serializer->serialize($lookup, null),
+                        $lookup,
                     );
                 }
             } catch (\RuntimeException $exception) {
