@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-final class Lookup implements TransformerInterface
+final class CategoryLookup implements TransformerInterface
 {
     private SerializerInterface $serializer;
 
@@ -44,21 +44,21 @@ final class Lookup implements TransformerInterface
                 $lookup = $this->cache->get(sprintf($this->cacheKey, $line[$this->mappingField]));
 
                 if ($lookup === null) {
-                    $lookup = $this->client->catalogCategoryAttributeOptionManagementV1GetItemsGet(
-                        attributeCode: $line[$this->mappingField],
+                    $lookup = $this->client->catalogCategoryRepositoryV1GetGet(
+                        categoryId: $line[$this->mappingField],
                     );
 
-                    if (!$lookup instanceof \Kiboko\Magento\V2_1\Model\EavDataAttributeOptionInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_2\Model\EavDataAttributeOptionInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_3\Model\EavDataAttributeOptionInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_4\Model\EavDataAttributeOptionInterface
+                    if (!$lookup instanceof \Kiboko\Magento\V2_1\Model\CatalogDataCategoryInterface
+                        && !$lookup instanceof \Kiboko\Magento\V2_2\Model\CatalogDataCategoryInterface
+                        && !$lookup instanceof \Kiboko\Magento\V2_3\Model\CatalogDataCategoryInterface
+                        && !$lookup instanceof \Kiboko\Magento\V2_4\Model\CatalogDataCategoryInterface
                     ) {
                         return;
                     }
 
                     $this->cache->set(
                         sprintf($this->cacheKey, $line[$this->mappingField]),
-                        $this->serializer->serialize($lookup),
+                        $this->serializer->serialize($lookup, null),
                     );
                 }
             } catch (\RuntimeException $exception) {
