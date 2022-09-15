@@ -30,6 +30,10 @@ final class CategoryLookup implements TransformerInterface
     {
         $line = yield;
         while (true) {
+            if ($line[$this->mappingField] === null) {
+                $line = yield new AcceptanceResultBucket($line);
+            }
+
             try {
                 $lookup = $this->cache->get(sprintf($this->cacheKey, $line[$this->mappingField]));
 
