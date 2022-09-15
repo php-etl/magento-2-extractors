@@ -32,9 +32,11 @@ final class Lookup implements TransformerInterface
                 $lookup = $this->cache->get(sprintf($this->cacheKey, $line[$this->mappingField]));
 
                 if ($lookup === null) {
-                    $lookup = $this->client->catalogCategoryAttributeOptionManagementV1GetItemsGet(
+                    $results = $this->client->catalogProductAttributeOptionManagementV1GetItemsGet(
                         attributeCode: $this->attributeCode,
                     );
+
+                    $lookup = array_values(array_filter($results, fn (object $item) => $item->getValue() === $line[$this->mappingField]))[0];
 
                     if (!$lookup instanceof \Kiboko\Magento\V2_1\Model\EavDataAttributeOptionInterface
                         && !$lookup instanceof \Kiboko\Magento\V2_2\Model\EavDataAttributeOptionInterface
