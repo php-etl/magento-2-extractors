@@ -2,12 +2,12 @@
     "name": "php-etl/magento2-flow",
     "autoload": {
         "psr-4": {
-            "Kiboko\\Magento\\v2_3\\Extractor\\": "src/v2_3"
+            "Kiboko\\Component\\Flow\\Magento2\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\Kiboko\\Magento\\V2\\Extractor\\": "tests/"
+            "Tests\\Kiboko\\Component\\Flow\\Magento2\\": "tests/"
         }
     },
     "authors": [
@@ -20,10 +20,11 @@
         "php": "^8.1",
         "php-etl/pipeline-contracts": "^0.3.3",
         "psr/log": "^1.0",
-        "php-etl/magento-v2-api-client": "^0.1.0",
         "nyholm/psr7": "^1.5",
         "php-etl/bucket": "^0.2.0",
-        "php-http/guzzle7-adapter": "^1.0"
+        "php-etl/magento2-api-client": "^0.1.0",
+        "psr/simple-cache": "^3.0",
+        "php-etl/mapping-contracts": "^0.2.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
