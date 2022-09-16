@@ -27,9 +27,9 @@ class FilterGroup
     public function compileFilters(int $groupIndex = 0): array
     {
         return array_merge(...array_map(fn (array $item, int $key) => [
-            sprintf('searchCriteria[filter_groups][%s][filters][%s][field]', $groupIndex, $key) => $item['field'],
-            sprintf('searchCriteria[filter_groups][%s][filters][%s][value]', $groupIndex, $key) => $item['value'],
-            sprintf('searchCriteria[filter_groups][%s][filters][%s][condition_type]', $groupIndex, $key) => $item['condition_type'],
+            sprintf('searchCriteria[filterGroups][%s][filters][%s][field]', $groupIndex, $key) => $item['field'],
+            sprintf('searchCriteria[filterGroups][%s][filters][%s][value]', $groupIndex, $key) => $item['value'],
+            sprintf('searchCriteria[filterGroups][%s][filters][%s][conditionType]', $groupIndex, $key) => $item['condition_type'],
         ], $this->filters, array_keys($this->filters)));
     }
 
