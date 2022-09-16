@@ -22,7 +22,9 @@
         "psr/log": "^1.0",
         "nyholm/psr7": "^1.5",
         "php-etl/bucket": "^0.2.0",
-        "php-etl/magento2-api-client": "^0.1.0"
+        "php-etl/magento2-api-client": "^0.1.0",
+        "psr/simple-cache": "^3.0",
+        "php-etl/mapping-contracts": "^0.2.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
