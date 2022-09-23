@@ -616,12 +616,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-etl/magento2-api-client.git",
-                "reference": "6871e4b4c62513bc6af7a1c6e882dba5ed40e1d2"
+                "reference": "8997167f00c6ea2f939aac95b9f4810ef43fb4a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/6871e4b4c62513bc6af7a1c6e882dba5ed40e1d2",
-                "reference": "6871e4b4c62513bc6af7a1c6e882dba5ed40e1d2",
+                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/8997167f00c6ea2f939aac95b9f4810ef43fb4a3",
+                "reference": "8997167f00c6ea2f939aac95b9f4810ef43fb4a3",
                 "shasum": ""
             },
             "require": {
@@ -662,7 +662,7 @@
                 "issues": "https://github.com/php-etl/magento2-api-client/issues",
                 "source": "https://github.com/php-etl/magento2-api-client/tree/main"
             },
-            "time": "2022-09-14T13:23:26+00:00"
+            "time": "2022-09-23T08:47:45+00:00"
         },
         {
             "name": "php-etl/mapping-contracts",

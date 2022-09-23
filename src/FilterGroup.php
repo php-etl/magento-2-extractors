@@ -2,24 +2,28 @@
 
 namespace Kiboko\Component\Flow\Magento2;
 
-use phpDocumentor\Reflection\Types\This;
-
 class FilterGroup
 {
     private array $filters = [];
 
-    public function asArray(): array
-    {
-        return $this->filters;
-    }
-
-    public function withFilter(string $field, string $operator, mixed $value): self
+    public function withFilter(Filter $filter): self
     {
         $this->filters[] = [
-            'field' => $field,
-            'value' => $value,
-            'condition_type' => $operator,
+            'field' => $filter->field,
+            'value' => $filter->value,
+            'condition_type' => $filter->conditionType,
         ];
+
+        return $this;
+    }
+
+    public function withFilters(Filter ...$filters): self
+    {
+        array_walk($filters, fn (Filter $filter) => $this->filters[] = [
+            'field' => $filter->field,
+            'value' => $filter->value,
+            'condition_type' => $filter->conditionType,
+        ]);
 
         return $this;
     }
@@ -35,11 +39,11 @@ class FilterGroup
 
     public function greaterThan(string $field, mixed $value): self
     {
-        return $this->withFilter($field, 'gt', $value);
+        return $this->withFilter(new Filter($field, 'gt', $value));
     }
 
     public function greaterThanEqual(string $field, mixed $value): self
     {
-        return $this->withFilter($field, 'gteq', $value);
+        return $this->withFilter(new Filter($field, 'gteq', $value));
     }
 }
