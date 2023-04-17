@@ -41,7 +41,7 @@
     "config": {
         "bin-dir": "bin",
         "allow-plugins": {
-            "php-http/discovery": false
+            "php-http/discovery": true
         }
     }
 }
