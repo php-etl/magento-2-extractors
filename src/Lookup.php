@@ -12,7 +12,6 @@ use Psr\SimpleCache\CacheInterface;
 
 final class Lookup implements TransformerInterface
 {
-
     public function __construct(
         private \Psr\Log\LoggerInterface $logger,
         private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
@@ -28,14 +27,14 @@ final class Lookup implements TransformerInterface
     {
         $line = yield;
         while (true) {
-            if ($line[$this->mappingField] === null) {
+            if (null === $line[$this->mappingField]) {
                 $line = yield new AcceptanceResultBucket($line);
             }
 
             try {
                 $lookup = $this->cache->get(sprintf($this->cacheKey, $line[$this->mappingField]));
 
-                if ($lookup === null) {
+                if (null === $lookup) {
                     $results = $this->client->catalogProductAttributeOptionManagementV1GetItemsGet(
                         attributeCode: $this->attributeCode,
                     );

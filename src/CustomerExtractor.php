@@ -31,6 +31,7 @@ final class CustomerExtractor implements \Kiboko\Contract\Pipeline\ExtractorInte
         $parameters['searchCriteria[pageSize]'] = $this->pageSize;
 
         $filters = array_map(fn (FilterGroup $item, int $key) => $item->compileFilters($key), $this->filters, array_keys($this->filters));
+
         return array_merge($parameters, ...$filters);
     }
 
