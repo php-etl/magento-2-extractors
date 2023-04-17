@@ -7,8 +7,9 @@ namespace Kiboko\Component\Flow\Magento2;
 use Kiboko\Component\Bucket\AcceptanceResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Bucket\ResultBucketInterface;
+use Kiboko\Contract\Pipeline\ExtractorInterface;
 
-final class InvoiceExtractor implements \Kiboko\Contract\Pipeline\ExtractorInterface
+final class InvoiceExtractor implements ExtractorInterface
 {
     private array $queryParameters = [
         'searchCriteria[currentPage]' => 1,
