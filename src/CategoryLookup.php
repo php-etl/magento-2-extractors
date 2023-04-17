@@ -8,14 +8,13 @@ use Kiboko\Component\Bucket\AcceptanceResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Mapping\CompiledMapperInterface;
 use Kiboko\Contract\Pipeline\TransformerInterface;
-use Psr\SimpleCache\CacheInterface;
 
 final readonly class CategoryLookup implements TransformerInterface
 {
     public function __construct(
         private \Psr\Log\LoggerInterface $logger,
         private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
-        private \Symfony\Contracts\Cache\CacheInterface $cache,
+        private \Psr\SimpleCache\CacheInterface $cache,
         private string $cacheKey,
         private CompiledMapperInterface $mapper,
         private string $mappingField,
