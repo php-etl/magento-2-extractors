@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Kiboko\Magento\V2\Extractor;
 
 use Kiboko\Component\Flow\Magento2\CustomerExtractor;
+use Kiboko\Component\Flow\Magento2\Filter;
 use Kiboko\Component\Flow\Magento2\FilterGroup;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
@@ -49,8 +50,8 @@ final class CustomerExtractorTest extends TestCase
             $client,
             1,
             [
-                (new FilterGroup())->withFilter('updated_at', 'eq', '2022-09-05'),
-                (new FilterGroup())->withFilter('active', 'eq', true),
+                (new FilterGroup())->withFilter(new Filter('updated_at', 'eq', '2022-09-05')),
+                (new FilterGroup())->withFilter(new Filter('active', 'eq', true)),
             ]
         );
 

@@ -9,12 +9,8 @@ use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Mapping\CompiledMapperInterface;
 use Kiboko\Contract\Pipeline\TransformerInterface;
 use Psr\SimpleCache\CacheInterface;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
 
-final class CategoryLookup implements TransformerInterface
+final readonly class CategoryLookup implements TransformerInterface
 {
     public function __construct(
         private \Psr\Log\LoggerInterface $logger,
@@ -30,14 +26,14 @@ final class CategoryLookup implements TransformerInterface
     {
         $line = yield;
         while (true) {
-            if ($line[$this->mappingField] === null) {
+            if (null === $line[$this->mappingField]) {
                 $line = yield new AcceptanceResultBucket($line);
             }
 
             try {
                 $lookup = $this->cache->get(sprintf($this->cacheKey, $line[$this->mappingField]));
 
-                if ($lookup === null) {
+                if (null === $lookup) {
                     $lookup = $this->client->catalogCategoryRepositoryV1GetGet(
                         categoryId: (int) $line[$this->mappingField],
                     );
