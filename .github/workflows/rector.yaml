@@ -7,7 +7,7 @@ on:
 jobs:
     rector:
         runs-on: ubuntu-latest
-        if: github.event.pull_request.head.repo.full_name == 'php-etl/csv-plugin'
+        if: github.event.pull_request.head.repo.full_name == 'php-etl/magento-flow'
         steps:
             -   uses: actions/checkout@v3
 
