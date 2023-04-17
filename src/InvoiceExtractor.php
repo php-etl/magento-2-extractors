@@ -16,11 +16,11 @@ final class InvoiceExtractor implements \Kiboko\Contract\Pipeline\ExtractorInter
     ];
 
     public function __construct(
-        private \Psr\Log\LoggerInterface $logger,
-        private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
-        private int $pageSize = 100,
+        private readonly \Psr\Log\LoggerInterface $logger,
+        private readonly \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
+        private readonly int $pageSize = 100,
         /** @var FilterGroup[] $filters */
-        private array $filters = [],
+        private readonly array $filters = [],
     ) {
     }
 
