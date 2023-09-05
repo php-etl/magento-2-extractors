@@ -8,6 +8,7 @@ use Kiboko\Component\Bucket\AcceptanceResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Bucket\ResultBucketInterface;
 use Kiboko\Contract\Pipeline\ExtractorInterface;
+use Psr\Http\Client\NetworkExceptionInterface;
 
 final class InvoiceExtractor implements ExtractorInterface
 {
@@ -62,8 +63,15 @@ final class InvoiceExtractor implements ExtractorInterface
 
                 yield $this->processResponse($response);
             }
-        } catch (\Exception $exception) {
+        } catch (NetworkExceptionInterface $exception) {
             $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
+            yield new RejectionResultBucket([
+                'path' => 'invoice',
+                'method' => 'get',
+                'queryParameters' => $this->compileQueryParameters(),
+            ]);
+        } catch (\Exception $exception) {
+            $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
         }
     }
 
