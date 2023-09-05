@@ -64,6 +64,7 @@ final class InvoiceExtractor implements ExtractorInterface
             }
         } catch (\Exception $exception) {
             $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
+            throw new \Exception('Magento Invoice Extractor did not work. Stopping the pipeline so potential invoices can be extracted later.', $exception->getCode(), $exception);
         }
     }
 

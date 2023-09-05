@@ -64,6 +64,7 @@ final class ProductExtractor implements ExtractorInterface
             }
         } catch (\Exception $exception) {
             $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
+            throw new \Exception('Magento Product Extractor did not work. Stopping the pipeline so potential products can be extracted later.', $exception->getCode(), $exception);
         }
     }
 

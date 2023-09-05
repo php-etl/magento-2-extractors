@@ -64,6 +64,7 @@ final class CustomerExtractor implements ExtractorInterface
             }
         } catch (\Exception $exception) {
             $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
+            throw new \Exception('Magento Customer Extractor did not work. Stopping the pipeline so potential customers can be extracted later.', $exception->getCode(), $exception);
         }
     }
 

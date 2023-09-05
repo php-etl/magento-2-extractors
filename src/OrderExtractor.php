@@ -64,6 +64,7 @@ final class OrderExtractor implements ExtractorInterface
             }
         } catch (\Exception $exception) {
             $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
+            throw new \Exception('Magento Order Extractor did not work. Stopping the pipeline so potential orders can be extracted later.', $exception->getCode(), $exception);
         }
     }
 
