@@ -23,8 +23,7 @@ final class InvoiceExtractor implements ExtractorInterface
         private readonly int $pageSize = 100,
         /** @var FilterGroup[] $filters */
         private readonly array $filters = [],
-    ) {
-    }
+    ) {}
 
     private function compileQueryParameters(int $currentPage = 1): array
     {
@@ -65,11 +64,15 @@ final class InvoiceExtractor implements ExtractorInterface
             }
         } catch (NetworkExceptionInterface $exception) {
             $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
-            yield new RejectionResultBucket([
-                'path' => 'invoice',
-                'method' => 'get',
-                'queryParameters' => $this->compileQueryParameters(),
-            ]);
+            yield new RejectionResultBucket(
+                'It seems that there are errors in the network',
+                $exception,
+                [
+                    'path' => 'invoice',
+                    'method' => 'get',
+                    'queryParameters' => $this->compileQueryParameters(),
+                ]
+            );
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
         }
@@ -82,7 +85,7 @@ final class InvoiceExtractor implements ExtractorInterface
             || $response instanceof \Kiboko\Magento\V2_3\Model\ErrorResponse
             || $response instanceof \Kiboko\Magento\V2_4\Model\ErrorResponse
         ) {
-            return new RejectionResultBucket($response);
+            return new RejectionResultBucket($response->getMessage(), null, $response);
         }
 
         return new AcceptanceResultBucket(...$response->getItems());
