@@ -63,15 +63,20 @@ final class OrderExtractor implements ExtractorInterface
                 yield $this->processResponse($response);
             }
         } catch (NetworkExceptionInterface $exception) {
-            $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
+            $this->logger->alert(
+                $exception->getMessage(),
+                [
+                    'exception' => $exception,
+                    'context' => [
+                        'path' => 'order',
+                        'method' => 'get',
+                        'queryParameters' => $this->compileQueryParameters(),
+                    ]
+                ]
+            );
             yield new RejectionResultBucket(
                 'It seems that there are errors in the network',
                 $exception,
-                [
-                    'path' => 'order',
-                    'method' => 'get',
-                    'queryParameters' => $this->compileQueryParameters(),
-                ]
             );
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage(), ['exception' => $exception]);

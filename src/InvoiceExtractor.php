@@ -63,15 +63,20 @@ final class InvoiceExtractor implements ExtractorInterface
                 yield $this->processResponse($response);
             }
         } catch (NetworkExceptionInterface $exception) {
-            $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
+            $this->logger->alert(
+                $exception->getMessage(),
+                [
+                    'exception' => $exception,
+                    'context' => [
+                        'path' => 'invoice',
+                        'method' => 'get',
+                        'queryParameters' => $this->compileQueryParameters(),
+                    ]
+                ]
+            );
             yield new RejectionResultBucket(
                 'It seems that there are errors in the network',
                 $exception,
-                [
-                    'path' => 'invoice',
-                    'method' => 'get',
-                    'queryParameters' => $this->compileQueryParameters(),
-                ]
             );
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
