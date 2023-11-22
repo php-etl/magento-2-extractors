@@ -71,7 +71,7 @@ final class CustomerExtractor implements ExtractorInterface
                         'path' => 'customer',
                         'method' => 'get',
                         'queryParameters' => $this->compileQueryParameters(),
-                    ]
+                    ],
                 ],
             );
             yield new RejectionResultBucket(

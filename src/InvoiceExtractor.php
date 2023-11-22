@@ -71,7 +71,7 @@ final class InvoiceExtractor implements ExtractorInterface
                         'path' => 'invoice',
                         'method' => 'get',
                         'queryParameters' => $this->compileQueryParameters(),
-                    ]
+                    ],
                 ]
             );
             yield new RejectionResultBucket(

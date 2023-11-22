@@ -71,7 +71,7 @@ final class ProductExtractor implements ExtractorInterface
                         'path' => 'product',
                         'method' => 'get',
                         'queryParameters' => $this->compileQueryParameters(),
-                    ]
+                    ],
                 ]
             );
             yield new RejectionResultBucket(

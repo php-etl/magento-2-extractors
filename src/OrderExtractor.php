@@ -71,7 +71,7 @@ final class OrderExtractor implements ExtractorInterface
                         'path' => 'order',
                         'method' => 'get',
                         'queryParameters' => $this->compileQueryParameters(),
-                    ]
+                    ],
                 ]
             );
             yield new RejectionResultBucket(
