@@ -1,0 +1,1 @@
+{"version":1,"defects":{"Tests\\Kiboko\\Magento\\V2\\Extractor\\CustomerExtractorTest::testIsSuccessful":8},"times":{"Tests\\Kiboko\\Magento\\V2\\Extractor\\CustomerExtractorTest::testIsSuccessful":0.038,"Tests\\Kiboko\\Magento\\V2\\Extractor\\OrderExtractorTest::testIsSuccessful":0.003,"Tests\\Kiboko\\Magento\\V2\\Extractor\\ProductExtractorTest::testIsSuccessful":0.002}}
