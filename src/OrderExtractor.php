@@ -75,7 +75,7 @@ final class OrderExtractor implements ExtractorInterface
                 ]
             );
             yield new RejectionResultBucket(
-                'It seems that there are errors in the network',
+                'There are some network difficulties. We could not properly connect to the Magento API. There is nothing we could no to fix this currently. Please contact the Magento administrator.',
                 $exception,
             );
         } catch (\Exception $exception) {
