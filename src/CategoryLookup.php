@@ -25,7 +25,6 @@ final readonly class CategoryLookup implements TransformerInterface
     public function transform(): \Generator
     {
         $line = yield new EmptyResultBucket();
-        /* @phpstan-ignore-next-line */
         while (true) {
             if (null === $line[$this->mappingField]) {
                 $line = yield new AcceptanceResultBucket($line);
