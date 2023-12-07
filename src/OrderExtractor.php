@@ -26,7 +26,7 @@ final class OrderExtractor implements ExtractorInterface
     ) {
     }
 
-    private function compileQueryParameters(int $currentPage = 1): array
+    private function compileQueryParameters(int $currentPage = 1)
     {
         $parameters = $this->queryParameters;
         $parameters['searchCriteria[currentPage]'] = $currentPage;
@@ -37,31 +37,71 @@ final class OrderExtractor implements ExtractorInterface
         return array_merge($parameters, ...$filters);
     }
 
+    private function compileQueryLongParameters()
+    {
+        $filters = array_map(fn (FilterGroup $item, int $key) => $item->compileLongFilters($key), $this->filters, array_keys($this->filters));
+
+        return array_merge(...$filters);
+    }
+
+    private function generateFinalQueryParameters(array $queryParameters, array $queryLongParameters): array
+    {
+        $finalQueryParameters = [];
+        if (!empty($queryLongParameters)) {
+            foreach ($queryLongParameters as $key => $longParameter) {
+                if (str_contains($key, '[value]')) {
+                    $queryParameterWithLongFilters = $queryParameters;
+                    $searchString = str_replace('[value]', '', $key);
+                    $queryParameterWithLongFilters = array_merge(
+                        $queryParameterWithLongFilters,
+                        [$searchString.'[field]' => $queryLongParameters[$searchString.'[field]']],
+                        [$searchString.'[conditionType]' => $queryLongParameters[$searchString.'[conditionType]']]
+                    );
+                    foreach ($longParameter as $parameterSlicedValue) {
+                        $queryParameterWithLongFilters = array_merge(
+                            $queryParameterWithLongFilters,
+                            [$searchString.'[value]' => implode(',', $parameterSlicedValue)]
+                        );
+                        $finalQueryParameters[] = $queryParameterWithLongFilters;
+                    }
+                }
+            }
+        } else {
+            $finalQueryParameters[] = $queryParameters;
+        }
+        return $finalQueryParameters;
+    }
+
     public function extract(): iterable
     {
         try {
-            $response = $this->client->salesOrderRepositoryV1GetListGet(
-                queryParameters: $this->compileQueryParameters(),
-            );
+            $queryParameters = $this->compileQueryParameters();
+            $queryLongParameters = $this->compileQueryLongParameters();
+            $finalQueryParameters = $this->generateFinalQueryParameters($queryParameters, $queryLongParameters);
 
-            if (!$response instanceof \Kiboko\Magento\V2_1\Model\SalesDataOrderSearchResultInterface
-                && !$response instanceof \Kiboko\Magento\V2_2\Model\SalesDataOrderSearchResultInterface
-                && !$response instanceof \Kiboko\Magento\V2_3\Model\SalesDataOrderSearchResultInterface
-                && !$response instanceof \Kiboko\Magento\V2_4\Model\SalesDataOrderSearchResultInterface
-            ) {
-                return;
-            }
-
-            yield $this->processResponse($response);
-
-            $currentPage = 1;
-            $pageCount = ceil($response->getTotalCount() / $this->pageSize);
-            while ($currentPage++ < $pageCount) {
+            foreach($finalQueryParameters as $finalQueryParameter) {
                 $response = $this->client->salesOrderRepositoryV1GetListGet(
-                    queryParameters: $this->compileQueryParameters($currentPage),
+                    queryParameters: $finalQueryParameter,
                 );
+                if (!$response instanceof \Kiboko\Magento\V2_1\Model\SalesDataOrderSearchResultInterface
+                    && !$response instanceof \Kiboko\Magento\V2_2\Model\SalesDataOrderSearchResultInterface
+                    && !$response instanceof \Kiboko\Magento\V2_3\Model\SalesDataOrderSearchResultInterface
+                    && !$response instanceof \Kiboko\Magento\V2_4\Model\SalesDataOrderSearchResultInterface
+                ) {
+                    return;
+                }
 
                 yield $this->processResponse($response);
+
+                $currentPage = 1;
+                $pageCount = ceil($response->getTotalCount() / $this->pageSize);
+                while ($currentPage++ < $pageCount) {
+                    $response = $this->client->salesOrderRepositoryV1GetListGet(
+                        queryParameters: $this->compileQueryParameters($currentPage),
+                    );
+
+                    yield $this->processResponse($response);
+                }
             }
         } catch (NetworkExceptionInterface $exception) {
             $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
