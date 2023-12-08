@@ -23,8 +23,7 @@ final class OrderExtractor implements ExtractorInterface
         private readonly int $pageSize = 100,
         /** @var FilterGroup[] $filters */
         private readonly array $filters = [],
-    ) {
-    }
+    ) {}
 
     private function compileQueryParameters(int $currentPage = 1): array
     {
@@ -69,6 +68,7 @@ final class OrderExtractor implements ExtractorInterface
         } else {
             $finalQueryParameters[] = $queryParameters;
         }
+
         return $finalQueryParameters;
     }
 
@@ -79,7 +79,7 @@ final class OrderExtractor implements ExtractorInterface
             $queryLongParameters = $this->compileQueryLongParameters();
             $finalQueryParameters = $this->generateFinalQueryParameters($queryParameters, $queryLongParameters);
 
-            foreach($finalQueryParameters as $finalQueryParameter) {
+            foreach ($finalQueryParameters as $finalQueryParameter) {
                 $response = $this->client->salesOrderRepositoryV1GetListGet(
                     queryParameters: $finalQueryParameter,
                 );

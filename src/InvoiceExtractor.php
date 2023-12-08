@@ -23,8 +23,7 @@ final class InvoiceExtractor implements ExtractorInterface
         private readonly int $pageSize = 100,
         /** @var FilterGroup[] $filters */
         private readonly array $filters = [],
-    ) {
-    }
+    ) {}
 
     private function compileQueryParameters(int $currentPage = 1): array
     {
