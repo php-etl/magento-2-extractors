@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kiboko\Component\Flow\Magento2;
 
 use Kiboko\Component\Bucket\AcceptanceResultBucket;
+use Kiboko\Component\Bucket\EmptyResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Mapping\CompiledMapperInterface;
 use Kiboko\Contract\Pipeline\TransformerInterface;
@@ -24,7 +25,7 @@ final readonly class CategoryLookup implements TransformerInterface
 
     public function transform(): \Generator
     {
-        $line = yield;
+        $line = yield new EmptyResultBucket();
         while (true) {
             if (null === $line[$this->mappingField]) {
                 $line = yield new AcceptanceResultBucket($line);

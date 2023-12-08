@@ -8,6 +8,7 @@ use Kiboko\Component\Bucket\AcceptanceResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Bucket\ResultBucketInterface;
 use Kiboko\Contract\Pipeline\ExtractorInterface;
+use Psr\Http\Client\NetworkExceptionInterface;
 
 final class OrderExtractor implements ExtractorInterface
 {
@@ -25,7 +26,7 @@ final class OrderExtractor implements ExtractorInterface
     ) {
     }
 
-    private function compileQueryParameters(int $currentPage = 1)
+    private function compileQueryParameters(int $currentPage = 1): array
     {
         $parameters = $this->queryParameters;
         $parameters['searchCriteria[currentPage]'] = $currentPage;
@@ -36,7 +37,7 @@ final class OrderExtractor implements ExtractorInterface
         return array_merge($parameters, ...$filters);
     }
 
-    private function compileQueryLongParameters()
+    private function compileQueryLongParameters(): array
     {
         $filters = array_map(fn (FilterGroup $item, int $key) => $item->compileLongFilters($key), $this->filters, array_keys($this->filters));
 
@@ -95,15 +96,23 @@ final class OrderExtractor implements ExtractorInterface
                 $currentPage = 1;
                 $pageCount = ceil($response->getTotalCount() / $this->pageSize);
                 while ($currentPage++ < $pageCount) {
+                    $finalQueryParameter['searchCriteria[currentPage]'] = $currentPage;
                     $response = $this->client->salesOrderRepositoryV1GetListGet(
-                        queryParameters: $this->compileQueryParameters($currentPage),
+                        queryParameters: $finalQueryParameter,
                     );
 
                     yield $this->processResponse($response);
                 }
             }
-        } catch (\Exception $exception) {
+        } catch (NetworkExceptionInterface $exception) {
             $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
+            yield new RejectionResultBucket([
+                'path' => 'order',
+                'method' => 'get',
+                'queryParameters' => $this->generateFinalQueryParameters($this->compileQueryParameters(), $this->compileQueryLongParameters()),
+            ]);
+        } catch (\Exception $exception) {
+            $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
         }
     }
 
