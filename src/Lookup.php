@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kiboko\Component\Flow\Magento2;
 
 use Kiboko\Component\Bucket\AcceptanceResultBucket;
-use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Component\Bucket\EmptyResultBucket;
+use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Mapping\CompiledMapperInterface;
 use Kiboko\Contract\Pipeline\TransformerInterface;
 use Psr\SimpleCache\CacheInterface;
@@ -21,8 +21,7 @@ final readonly class Lookup implements TransformerInterface
         private CompiledMapperInterface $mapper,
         private string $mappingField,
         private string $attributeCode,
-    ) {
-    }
+    ) {}
 
     public function transform(): \Generator
     {

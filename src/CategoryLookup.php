@@ -20,8 +20,7 @@ final readonly class CategoryLookup implements TransformerInterface
         private string $cacheKey,
         private CompiledMapperInterface $mapper,
         private string $mappingField,
-    ) {
-    }
+    ) {}
 
     public function transform(): \Generator
     {

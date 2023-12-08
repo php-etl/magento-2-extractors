@@ -10,6 +10,5 @@ class Filter
         public string $field,
         public string $conditionType,
         public mixed $value,
-    ) {
-    }
+    ) {}
 }

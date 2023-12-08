@@ -50,8 +50,8 @@ class FilterGroup
     private function sliceLongFilter(string $value): iterable
     {
         $iterator = new \ArrayIterator(explode(',', $value));
-        while($this->offset < iterator_count($iterator)) {
-            $filteredValue = array_slice(iterator_to_array($iterator), $this->offset, $this->lenght);
+        while ($this->offset < iterator_count($iterator)) {
+            $filteredValue = \array_slice(iterator_to_array($iterator), $this->offset, $this->lenght);
             $this->offset += $this->lenght;
             yield $filteredValue;
         }
