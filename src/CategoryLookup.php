@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kiboko\Component\Flow\Magento2;
 
 use Kiboko\Component\Bucket\AcceptanceResultBucket;
+use Kiboko\Component\Bucket\EmptyResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Mapping\CompiledMapperInterface;
 use Kiboko\Contract\Pipeline\TransformerInterface;
@@ -19,12 +20,11 @@ final readonly class CategoryLookup implements TransformerInterface
         private string $cacheKey,
         private CompiledMapperInterface $mapper,
         private string $mappingField,
-    ) {
-    }
+    ) {}
 
     public function transform(): \Generator
     {
-        $line = yield;
+        $line = yield new EmptyResultBucket();
         while (true) {
             if (null === $line[$this->mappingField]) {
                 $line = yield new AcceptanceResultBucket($line);
@@ -53,7 +53,11 @@ final readonly class CategoryLookup implements TransformerInterface
                 }
             } catch (\RuntimeException $exception) {
                 $this->logger->warning($exception->getMessage(), ['exception' => $exception, 'item' => $line]);
-                $line = yield new RejectionResultBucket($line);
+                $line = yield new RejectionResultBucket(
+                    sprintf('Something went wrong in the attempt to recover the category with id %d', (int) $line[$this->mappingField]),
+                    $exception,
+                    $line
+                );
                 continue;
             }
 

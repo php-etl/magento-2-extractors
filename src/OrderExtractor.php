@@ -23,8 +23,7 @@ final class OrderExtractor implements ExtractorInterface
         private readonly int $pageSize = 100,
         /** @var FilterGroup[] $filters */
         private readonly array $filters = [],
-    ) {
-    }
+    ) {}
 
     private function compileQueryParameters(int $currentPage = 1): array
     {
@@ -64,12 +63,21 @@ final class OrderExtractor implements ExtractorInterface
                 yield $this->processResponse($response);
             }
         } catch (NetworkExceptionInterface $exception) {
-            $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
-            yield new RejectionResultBucket([
-                'path' => 'order',
-                'method' => 'get',
-                'queryParameters' => $this->compileQueryParameters(),
-            ]);
+            $this->logger->alert(
+                $exception->getMessage(),
+                [
+                    'exception' => $exception,
+                    'context' => [
+                        'path' => 'order',
+                        'method' => 'get',
+                        'queryParameters' => $this->compileQueryParameters(),
+                    ],
+                ]
+            );
+            yield new RejectionResultBucket(
+                'There are some network difficulties. We could not properly connect to the Magento API. There is nothing we could no to fix this currently. Please contact the Magento administrator.',
+                $exception,
+            );
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
         }
@@ -82,7 +90,7 @@ final class OrderExtractor implements ExtractorInterface
             || $response instanceof \Kiboko\Magento\V2_3\Model\ErrorResponse
             || $response instanceof \Kiboko\Magento\V2_4\Model\ErrorResponse
         ) {
-            return new RejectionResultBucket($response);
+            return new RejectionResultBucket($response->getMessage(), null, $response);
         }
 
         return new AcceptanceResultBucket(...$response->getItems());
