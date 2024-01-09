@@ -47,7 +47,7 @@ class FilterGroup
         return $this;
     }
 
-    private function sliceLongFilter(string $value): iterable
+    private function sliceFilter(string $value): iterable
     {
         $iterator = new \ArrayIterator(explode(',', $value));
         while ($this->offset < iterator_count($iterator)) {
@@ -61,7 +61,7 @@ class FilterGroup
     {
         return array_merge(...array_map(fn (array $item, int $key) => [
             sprintf('searchCriteria[filterGroups][%s][filters][%s][field]', $groupIndex, $key) => $item['field'],
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][value]', $groupIndex, $key) => iterator_to_array($this->sliceLongFilter($item['value'])),
+            sprintf('searchCriteria[filterGroups][%s][filters][%s][value]', $groupIndex, $key) => iterator_to_array($this->sliceFilter($item['value'])),
             sprintf('searchCriteria[filterGroups][%s][filters][%s][conditionType]', $groupIndex, $key) => $item['condition_type'],
         ], $this->longFilters, array_keys($this->longFilters)));
     }
