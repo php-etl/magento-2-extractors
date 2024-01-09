@@ -106,12 +106,21 @@ final class OrderExtractor implements ExtractorInterface
                 }
             }
         } catch (NetworkExceptionInterface $exception) {
-            $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
-            yield new RejectionResultBucket([
-                'path' => 'order',
-                'method' => 'get',
-                'queryParameters' => $this->generateFinalQueryParameters($this->compileQueryParameters(), $this->compileQueryLongParameters()),
-            ]);
+            $this->logger->alert(
+                $exception->getMessage(),
+                [
+                    'exception' => $exception,
+                    'context' => [
+                        'path' => 'order',
+                        'method' => 'get',
+                        'queryParameters' => $this->generateFinalQueryParameters($this->compileQueryParameters(), $this->compileQueryLongParameters()),
+                    ],
+                ]
+            );
+            yield new RejectionResultBucket(
+                'There are some network difficulties. We could not properly connect to the Magento API. There is nothing we could no to fix this currently. Please contact the Magento administrator.',
+                $exception,
+            );
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
         }
@@ -124,7 +133,7 @@ final class OrderExtractor implements ExtractorInterface
             || $response instanceof \Kiboko\Magento\V2_3\Model\ErrorResponse
             || $response instanceof \Kiboko\Magento\V2_4\Model\ErrorResponse
         ) {
-            return new RejectionResultBucket($response);
+            return new RejectionResultBucket($response->getMessage(), null, $response);
         }
 
         return new AcceptanceResultBucket(...$response->getItems());

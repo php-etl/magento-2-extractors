@@ -21,8 +21,7 @@ final readonly class Lookup implements TransformerInterface
         private CompiledMapperInterface $mapper,
         private string $mappingField,
         private string $attributeCode,
-    ) {
-    }
+    ) {}
 
     public function transform(): \Generator
     {
@@ -57,7 +56,11 @@ final readonly class Lookup implements TransformerInterface
                 }
             } catch (\RuntimeException $exception) {
                 $this->logger->warning($exception->getMessage(), ['exception' => $exception, 'item' => $line]);
-                $line = yield new RejectionResultBucket($line);
+                $line = yield new RejectionResultBucket(
+                    sprintf('Something went wrong in the attempt to recover the attribute option for attribute %s', $this->attributeCode),
+                    $exception,
+                    $line
+                );
                 continue;
             }
 

@@ -20,8 +20,7 @@ final readonly class CategoryLookup implements TransformerInterface
         private string $cacheKey,
         private CompiledMapperInterface $mapper,
         private string $mappingField,
-    ) {
-    }
+    ) {}
 
     public function transform(): \Generator
     {
@@ -54,7 +53,11 @@ final readonly class CategoryLookup implements TransformerInterface
                 }
             } catch (\RuntimeException $exception) {
                 $this->logger->warning($exception->getMessage(), ['exception' => $exception, 'item' => $line]);
-                $line = yield new RejectionResultBucket($line);
+                $line = yield new RejectionResultBucket(
+                    sprintf('Something went wrong in the attempt to recover the category with id %d', (int) $line[$this->mappingField]),
+                    $exception,
+                    $line
+                );
                 continue;
             }
 
