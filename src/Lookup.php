@@ -21,7 +21,8 @@ final readonly class Lookup implements TransformerInterface
         private CompiledMapperInterface $mapper,
         private string $mappingField,
         private string $attributeCode,
-    ) {}
+    ) {
+    }
 
     public function transform(): \Generator
     {
