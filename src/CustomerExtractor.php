@@ -6,59 +6,71 @@ namespace Kiboko\Component\Flow\Magento2;
 
 use Kiboko\Component\Bucket\AcceptanceResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
+use Kiboko\Component\Flow\Magento2\Filter\FilterInterface;
 use Kiboko\Contract\Bucket\ResultBucketInterface;
 use Kiboko\Contract\Pipeline\ExtractorInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 
 final class CustomerExtractor implements ExtractorInterface
 {
-    private array $queryParameters = [
-        'searchCriteria[currentPage]' => 1,
-        'searchCriteria[pageSize]' => 100,
-    ];
-
     public function __construct(
         private readonly \Psr\Log\LoggerInterface $logger,
         private readonly \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
+        private readonly QueryParameters $queryParameters,
         private readonly int $pageSize = 100,
-        /** @var FilterGroup[] $filters */
-        private readonly array $filters = [],
     ) {
     }
 
-    private function compileQueryParameters(int $currentPage = 1): array
+    private function walkFilterVariants(int $currentPage = 1): \Traversable
     {
-        $parameters = $this->queryParameters;
-        $parameters['searchCriteria[currentPage]'] = $currentPage;
-        $parameters['searchCriteria[pageSize]'] = $this->pageSize;
+        $parameters = [
+            ...$this->queryParameters,
+            ...[
+                'searchCriteria[currentPage]' => $currentPage,
+                'searchCriteria[pageSize]' => $this->pageSize,
+            ],
+        ];
 
         $filters = array_map(fn (FilterGroup $item, int $key) => $item->compileFilters($key), $this->filters, array_keys($this->filters));
 
         return array_merge($parameters, ...$filters);
     }
 
+    private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
+    {
+        return [
+            ...$parameters,
+            ...[
+                'searchCriteria[currentPage]' => $currentPage,
+                'searchCriteria[pageSize]' => $this->pageSize,
+            ],
+        ];
+    }
+
     public function extract(): iterable
     {
         try {
-            $response = $this->client->customerCustomerRepositoryV1GetListGet(
-                queryParameters: $this->compileQueryParameters(),
-            );
+            foreach ($this->queryParameters->walkVariants([]) as $parameters) {
+                $currentPage = 1;
+                $response = $this->client->customerCustomerRepositoryV1GetListGet(
+                    queryParameters: $parameters,
+                );
 
-            if (!$response instanceof \Kiboko\Magento\V2_1\Model\CustomerDataCustomerSearchResultsInterface
-                && !$response instanceof \Kiboko\Magento\V2_2\Model\CustomerDataCustomerSearchResultsInterface
-                && !$response instanceof \Kiboko\Magento\V2_3\Model\CustomerDataCustomerSearchResultsInterface
-                && !$response instanceof \Kiboko\Magento\V2_4\Model\CustomerDataCustomerSearchResultsInterface
-            ) {
-                return;
+                if (!$response instanceof \Kiboko\Magento\V2_1\Model\CustomerDataCustomerSearchResultsInterface
+                    && !$response instanceof \Kiboko\Magento\V2_2\Model\CustomerDataCustomerSearchResultsInterface
+                    && !$response instanceof \Kiboko\Magento\V2_3\Model\CustomerDataCustomerSearchResultsInterface
+                    && !$response instanceof \Kiboko\Magento\V2_4\Model\CustomerDataCustomerSearchResultsInterface
+                ) {
+                    return;
+                }
+
+                yield $this->processResponse($response);
             }
 
-            yield $this->processResponse($response);
 
-            $currentPage = 1;
-            $pageCount = ceil($response->getTotalCount() / $this->pageSize);
             while ($currentPage++ < $pageCount) {
                 $response = $this->client->customerCustomerRepositoryV1GetListGet(
-                    queryParameters: $this->compileQueryParameters($currentPage),
+                    queryParameters: $this->walkFilterVariants($currentPage),
                 );
 
                 yield $this->processResponse($response);
@@ -71,7 +83,7 @@ final class CustomerExtractor implements ExtractorInterface
                     'context' => [
                         'path' => 'customer',
                         'method' => 'get',
-                        'queryParameters' => $this->compileQueryParameters(),
+                        'queryParameters' => $this->walkFilterVariants(),
                     ],
                 ],
             );
