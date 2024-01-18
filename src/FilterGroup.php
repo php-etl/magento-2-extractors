@@ -4,84 +4,71 @@ declare(strict_types=1);
 
 namespace Kiboko\Component\Flow\Magento2;
 
+use Kiboko\Component\Flow\Magento2\Filter\FilterInterface;
+use Kiboko\Component\Flow\Magento2\Filter\ScalarFilter;
+
 class FilterGroup
 {
     private array $filters = [];
-    private array $longFilters = [];
-    private int $offset = 0;
-    private int $lenght = 200;
 
-    public function withFilter(Filter $filter): self
+    public function withFilter(FilterInterface $filter): self
     {
-        $this->filters[] = [
-            'field' => $filter->field,
-            'value' => $filter->value,
-            'condition_type' => $filter->conditionType,
-        ];
+        $this->filters[] = $filter;
 
         return $this;
     }
 
-    public function withLongFilter(Filter $filter, int $offset = 0, int $lenght = 200): self
+    /**
+     * @param array $parameters
+     * @param int $groupIndex
+     * @return \Traversable<int, array>
+     */
+    public function walkFilters(array $parameters, int $groupIndex = 0): \Traversable
     {
-        $this->longFilters[] = [
-            'field' => $filter->field,
-            'value' => $filter->value,
-            'condition_type' => $filter->conditionType,
-        ];
+        if (count($this->filters) < 1) {
+            return;
+        }
 
-        $this->offset = $offset;
-        $this->lenght = $lenght;
-
-        return $this;
+        yield from $this->buildFilters($parameters, $groupIndex, 1, ...$this->filters);
     }
 
-    public function withFilters(Filter ...$filters): self
+    private function buildFilters(array $parameters, int $groupIndex, int $filterIndex, FilterInterface $first, FilterInterface ...$next): \Traversable
     {
-        array_walk($filters, fn (Filter $filter) => $this->filters[] = [
-            'field' => $filter->field,
-            'value' => $filter->value,
-            'condition_type' => $filter->conditionType,
-        ]);
+        foreach ($first as $current) {
+            $childParameters = [
+                ...$parameters,
+                ...[
+                    sprintf('searchCriteria[filterGroups][%s][filters][%s][field]', $groupIndex, $filterIndex) => $current['field'],
+                    sprintf('searchCriteria[filterGroups][%s][filters][%s][value]', $groupIndex, $filterIndex) => $current['value'],
+                    sprintf('searchCriteria[filterGroups][%s][filters][%s][conditionType]', $groupIndex, $filterIndex) => $current['conditionType'],
+                ]
+            ];
 
-        return $this;
-    }
-
-    private function sliceFilter(string $value): iterable
-    {
-        $iterator = new \ArrayIterator(explode(',', $value));
-        while ($this->offset < iterator_count($iterator)) {
-            $filteredValue = \array_slice(iterator_to_array($iterator), $this->offset, $this->lenght);
-            $this->offset += $this->lenght;
-            yield $filteredValue;
+            if (count($next) >= 1) {
+                yield from $this->buildFilters($childParameters, $groupIndex, $filterIndex + 1, ...$next);
+            } else {
+                yield $childParameters;
+            }
         }
     }
 
-    public function compileLongFilters(int $groupIndex = 0)
+    public function greaterThan(string $field, int|float|string|\DateTimeInterface $value): self
     {
-        return array_merge(...array_map(fn (array $item, int $key) => [
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][field]', $groupIndex, $key) => $item['field'],
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][value]', $groupIndex, $key) => iterator_to_array($this->sliceFilter($item['value'])),
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][conditionType]', $groupIndex, $key) => $item['condition_type'],
-        ], $this->longFilters, array_keys($this->longFilters)));
+        return $this->withFilter(new ScalarFilter($field, 'gt', $value));
     }
 
-    public function compileFilters(int $groupIndex = 0): array
+    public function lowerThan(string $field, int|float|string|\DateTimeInterface $value): self
     {
-        return array_merge(...array_map(fn (array $item, int $key) => [
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][field]', $groupIndex, $key) => $item['field'],
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][value]', $groupIndex, $key) => $item['value'],
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][conditionType]', $groupIndex, $key) => $item['condition_type'],
-        ], $this->filters, array_keys($this->filters)));
+        return $this->withFilter(new ScalarFilter($field, 'lt', $value));
     }
 
-    public function greaterThan(string $field, mixed $value): self
+    public function greaterThanOrEqual(string $field, int|float|string|\DateTimeInterface $value): self
     {
-        return $this->withFilter(new Filter($field, 'gt', $value));
+        return $this->withFilter(new ScalarFilter($field, 'gteq', $value));
     }
 
-    public function greaterThanEqual(string $field, mixed $value): self
+    public function lowerThanOrEqual(string $field, int|float|string|\DateTimeInterface $value): self
     {
-        return $this->withFilter(new Filter($field, 'gteq', $value));
+        return $this->withFilter(new ScalarFilter($field, 'lteq', $value));
     }
 }
