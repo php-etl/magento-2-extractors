@@ -11,13 +11,13 @@ use Kiboko\Contract\Bucket\ResultBucketInterface;
 use Kiboko\Contract\Pipeline\ExtractorInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 
-final class CustomerExtractor implements ExtractorInterface
+final readonly class CustomerExtractor implements ExtractorInterface
 {
     public function __construct(
-        private readonly \Psr\Log\LoggerInterface $logger,
-        private readonly \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
-        private readonly QueryParameters $queryParameters,
-        private readonly int $pageSize = 100,
+        private \Psr\Log\LoggerInterface $logger,
+        private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
+        private QueryParameters $queryParameters,
+        private int $pageSize = 100,
     ) {
     }
 
@@ -49,6 +49,8 @@ final class CustomerExtractor implements ExtractorInterface
 
     public function extract(): iterable
     {
+        $currentPage = null;
+        $pageCount = null;
         try {
             foreach ($this->queryParameters->walkVariants([]) as $parameters) {
                 $currentPage = 1;

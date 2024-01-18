@@ -10,7 +10,7 @@ final class ArrayFilter implements FilterInterface, \IteratorAggregate
         public string $field,
         public string $conditionType,
         public array $value,
-        private int $threshold = 200
+        private readonly int $threshold = 200
     ) {}
 
     /**

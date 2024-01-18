@@ -19,8 +19,6 @@ class FilterGroup
     }
 
     /**
-     * @param array $parameters
-     * @param int $groupIndex
      * @return \Traversable<int, array>
      */
     public function walkFilters(array $parameters, int $groupIndex = 0): \Traversable
