@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ba294ed94e2e06ee41ed221c1d0dc7f3",
+    "content-hash": "b15a1084d07d8ec62372c0cc6f232ac6",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -618,12 +618,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-etl/magento2-api-client.git",
-                "reference": "608c07cb37c7a6ca9f03bc507ce7bc006fe9c408"
+                "reference": "46a2c89a5275af40809f9c045577f22b0e53dce9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/608c07cb37c7a6ca9f03bc507ce7bc006fe9c408",
-                "reference": "608c07cb37c7a6ca9f03bc507ce7bc006fe9c408",
+                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/46a2c89a5275af40809f9c045577f22b0e53dce9",
+                "reference": "46a2c89a5275af40809f9c045577f22b0e53dce9",
                 "shasum": ""
             },
             "require": {
@@ -661,7 +661,7 @@
                 "issues": "https://github.com/php-etl/magento2-api-client/issues",
                 "source": "https://github.com/php-etl/magento2-api-client/tree/2.4"
             },
-            "time": "2024-01-19T08:15:48+00:00"
+            "time": "2024-01-22T09:20:52+00:00"
         },
         {
             "name": "php-etl/mapping-contracts",
@@ -4692,7 +4692,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "php-etl/magento2-api-client": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

@@ -15,13 +15,16 @@ use Psr\Log\NullLogger;
 
 /**
  * @internal
+ *
+ * @coversNothing
  */
-#[\PHPUnit\Framework\Attributes\CoversNothing]
 final class OrderExtractorTest extends TestCase
 {
     use ExtractorAssertTrait;
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    /**
+     * @test
+     */
     public function isSuccessful(): void
     {
         $order = (new SalesDataOrderInterface())
