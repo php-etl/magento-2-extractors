@@ -2,39 +2,49 @@
 
 declare(strict_types=1);
 
-namespace Tests\Kiboko\Magento\V2\Extractor;
+namespace Tests\Kiboko\Component\Flow\Magento2;
 
 use Kiboko\Component\Flow\Magento2\OrderExtractor;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
-use Kiboko\Magento\V2_3\Model\SalesDataOrderInterface;
-use Kiboko\Magento\V2_3\Model\SalesDataOrderSearchResultInterface;
+use Kiboko\Magento\Model\SalesDataOrderInterface;
+use Kiboko\Magento\Model\SalesDataOrderSearchResultInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
 final class OrderExtractorTest extends TestCase
 {
     use ExtractorAssertTrait;
 
-    public function testIsSuccessful(): void
+    /**
+     * @test
+     */
+    public function isSuccessful(): void
     {
         $order = (new SalesDataOrderInterface())
             ->setEntityId(1)
             ->setCustomerId(10)
-            ->setTotalQtyOrdered(3);
+            ->setTotalQtyOrdered(3)
+        ;
 
-        $client = $this->createMock(\Kiboko\Magento\V2_3\Client::class);
+        $client = $this->createMock(\Kiboko\Magento\Client::class);
         $client
             ->expects($this->once())
-            ->method('salesOrderRepositoryV1GetListGet')
+            ->method('getV1Orders')
             ->willReturn(
-                (new SalesDataOrderSearchResultInterface)
+                (new SalesDataOrderSearchResultInterface())
                     ->setItems([
-                        $order
+                        $order,
                     ])
                     ->setTotalCount(1)
-            );
+            )
+        ;
 
         $extractor = new OrderExtractor(
             new NullLogger(),
@@ -43,7 +53,7 @@ final class OrderExtractorTest extends TestCase
 
         $this->assertExtractorExtractsExactly(
             [
-                $order
+                $order,
             ],
             $extractor
         );

@@ -15,13 +15,14 @@ final readonly class Lookup implements TransformerInterface
 {
     public function __construct(
         private \Psr\Log\LoggerInterface $logger,
-        private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
+        private \Kiboko\Magento\Client $client,
         private CacheInterface $cache,
         private string $cacheKey,
         private CompiledMapperInterface $mapper,
         private string $mappingField,
         private string $attributeCode,
-    ) {}
+    ) {
+    }
 
     public function transform(): \Generator
     {
@@ -35,17 +36,13 @@ final readonly class Lookup implements TransformerInterface
                 $lookup = $this->cache->get(sprintf($this->cacheKey, $line[$this->mappingField]));
 
                 if (null === $lookup) {
-                    $results = $this->client->catalogProductAttributeOptionManagementV1GetItemsGet(
+                    $results = $this->client->getV1ProductsAttributesAttributeCodeOptions(
                         attributeCode: $this->attributeCode,
                     );
 
                     $lookup = array_values(array_filter($results, fn (object $item) => $item->getValue() === $line[$this->mappingField]))[0];
 
-                    if (!$lookup instanceof \Kiboko\Magento\V2_1\Model\EavDataAttributeOptionInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_2\Model\EavDataAttributeOptionInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_3\Model\EavDataAttributeOptionInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_4\Model\EavDataAttributeOptionInterface
-                    ) {
+                    if (!$lookup instanceof \Kiboko\Magento\Model\EavDataAttributeOptionInterface) {
                         return;
                     }
 

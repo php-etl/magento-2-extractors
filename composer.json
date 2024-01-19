@@ -22,7 +22,7 @@
         "psr/log": "^3.0",
         "nyholm/psr7": "^1.5",
         "php-etl/bucket": "*",
-        "php-etl/magento2-api-client": "^0.1.0",
+        "php-etl/magento2-api-client": "~2.0",
         "psr/simple-cache": "^3.0",
         "php-etl/mapping-contracts": "0.4.*",
         "php-etl/bucket-contracts": "0.3.*"
@@ -42,7 +42,8 @@
     "config": {
         "bin-dir": "bin",
         "allow-plugins": {
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "infection/extension-installer": true
         }
     }
 }
