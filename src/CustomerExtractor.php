@@ -23,17 +23,13 @@ final readonly class CustomerExtractor implements ExtractorInterface
 
     private function walkFilterVariants(int $currentPage = 1): \Traversable
     {
-        $parameters = [
-            ...$this->queryParameters,
+        yield from [
+            ...$this->queryParameters->walkVariants([]),
             ...[
                 'searchCriteria[currentPage]' => $currentPage,
                 'searchCriteria[pageSize]' => $this->pageSize,
             ],
         ];
-
-        $filters = array_map(fn (FilterGroup $item, int $key) => $item->compileFilters($key), $this->filters, array_keys($this->filters));
-
-        return array_merge($parameters, ...$filters);
     }
 
     private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
@@ -42,7 +38,7 @@ final readonly class CustomerExtractor implements ExtractorInterface
             ...$parameters,
             ...[
                 'searchCriteria[currentPage]' => $currentPage,
-                'searchCriteria[pageSize]' => $this->pageSize,
+                'searchCriteria[pageSize]' => $pageSize,
             ],
         ];
     }
@@ -55,7 +51,7 @@ final readonly class CustomerExtractor implements ExtractorInterface
             foreach ($this->queryParameters->walkVariants([]) as $parameters) {
                 $currentPage = 1;
                 $response = $this->client->customerCustomerRepositoryV1GetListGet(
-                    queryParameters: $parameters,
+                    queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
                 );
 
                 if (!$response instanceof \Kiboko\Magento\V2_1\Model\CustomerDataCustomerSearchResultsInterface
@@ -72,7 +68,7 @@ final readonly class CustomerExtractor implements ExtractorInterface
 
             while ($currentPage++ < $pageCount) {
                 $response = $this->client->customerCustomerRepositoryV1GetListGet(
-                    queryParameters: $this->walkFilterVariants($currentPage),
+                    queryParameters: iterator_to_array($this->walkFilterVariants($currentPage)),
                 );
 
                 yield $this->processResponse($response);

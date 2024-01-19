@@ -12,78 +12,47 @@ use Psr\Http\Client\NetworkExceptionInterface;
 
 final class OrderExtractor implements ExtractorInterface
 {
-    private array $queryParameters = [
-        'searchCriteria[currentPage]' => 1,
-        'searchCriteria[pageSize]' => 100,
-    ];
-
     public function __construct(
-        private readonly \Psr\Log\LoggerInterface $logger,
-        private readonly \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
-        private readonly int $pageSize = 100,
-        /** @var FilterGroup[] $filters */
-        private readonly array $filters = [],
+        private \Psr\Log\LoggerInterface $logger,
+        private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
+        private QueryParameters $queryParameters,
+        private int $pageSize = 100,
     ) {
     }
 
-    private function compileQueryParameters(int $currentPage = 1): array
+    private function walkFilterVariants(int $currentPage = 1): \Traversable
     {
-        $parameters = $this->queryParameters;
-        $parameters['searchCriteria[currentPage]'] = $currentPage;
-        $parameters['searchCriteria[pageSize]'] = $this->pageSize;
-
-        $filters = array_map(fn (FilterGroup $item, int $key) => $item->compileFilters($key), $this->filters, array_keys($this->filters));
-
-        return array_merge($parameters, ...$filters);
+        yield from [
+            ...$this->queryParameters->walkVariants([]),
+            ...[
+                'searchCriteria[currentPage]' => $currentPage,
+                'searchCriteria[pageSize]' => $this->pageSize,
+            ],
+        ];
     }
 
-    private function compileQueryLongParameters(): array
+    private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
     {
-        $filters = array_map(fn (FilterGroup $item, int $key) => $item->compileLongFilters($key), $this->filters, array_keys($this->filters));
-
-        return array_merge(...$filters);
-    }
-
-    private function generateFinalQueryParameters(array $queryParameters, array $queryLongParameters): array
-    {
-        $finalQueryParameters = [];
-        if (!empty($queryLongParameters)) {
-            foreach ($queryLongParameters as $key => $longParameter) {
-                if (str_contains($key, '[value]')) {
-                    $queryParameterWithLongFilters = $queryParameters;
-                    $searchString = str_replace('[value]', '', $key);
-                    $queryParameterWithLongFilters = array_merge(
-                        $queryParameterWithLongFilters,
-                        [$searchString.'[field]' => $queryLongParameters[$searchString.'[field]']],
-                        [$searchString.'[conditionType]' => $queryLongParameters[$searchString.'[conditionType]']]
-                    );
-                    foreach ($longParameter as $parameterSlicedValue) {
-                        $queryParameterWithLongFilters = array_merge(
-                            $queryParameterWithLongFilters,
-                            [$searchString.'[value]' => implode(',', $parameterSlicedValue)]
-                        );
-                        $finalQueryParameters[] = $queryParameterWithLongFilters;
-                    }
-                }
-            }
-        } else {
-            $finalQueryParameters[] = $queryParameters;
-        }
-
-        return $finalQueryParameters;
+        return [
+            ...$parameters,
+            ...[
+                'searchCriteria[currentPage]' => $currentPage,
+                'searchCriteria[pageSize]' => $pageSize,
+            ],
+        ];
     }
 
     public function extract(): iterable
     {
+        $currentPage = null;
+        $pageCount = null;
         try {
-            $queryParameters = $this->compileQueryParameters();
-            $queryLongParameters = $this->compileQueryLongParameters();
-            $finalQueryParameters = $this->generateFinalQueryParameters($queryParameters, $queryLongParameters);
-
-            foreach ($finalQueryParameters as $finalQueryParameter) {
+            foreach ($this->queryParameters->walkVariants([]) as $parameters) {
+                $currentPage = 1;
                 $response = $this->client->salesOrderRepositoryV1GetListGet(
-                    queryParameters: $finalQueryParameter,
+                    queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
                 );
+
                 if (!$response instanceof \Kiboko\Magento\V2_1\Model\SalesDataOrderSearchResultInterface
                     && !$response instanceof \Kiboko\Magento\V2_2\Model\SalesDataOrderSearchResultInterface
                     && !$response instanceof \Kiboko\Magento\V2_3\Model\SalesDataOrderSearchResultInterface
@@ -93,25 +62,32 @@ final class OrderExtractor implements ExtractorInterface
                 }
 
                 yield $this->processResponse($response);
+            }
 
-                $currentPage = 1;
-                $pageCount = ceil($response->getTotalCount() / $this->pageSize);
-                while ($currentPage++ < $pageCount) {
-                    $finalQueryParameter['searchCriteria[currentPage]'] = $currentPage;
-                    $response = $this->client->salesOrderRepositoryV1GetListGet(
-                        queryParameters: $finalQueryParameter,
-                    );
 
-                    yield $this->processResponse($response);
-                }
+            while ($currentPage++ < $pageCount) {
+                $response = $this->client->salesOrderRepositoryV1GetListGet(
+                    queryParameters: iterator_to_array($this->walkFilterVariants($currentPage)),
+                );
+
+                yield $this->processResponse($response);
             }
         } catch (NetworkExceptionInterface $exception) {
-            $this->logger->alert($exception->getMessage(), ['exception' => $exception]);
-            yield new RejectionResultBucket([
-                'path' => 'order',
-                'method' => 'get',
-                'queryParameters' => $this->generateFinalQueryParameters($this->compileQueryParameters(), $this->compileQueryLongParameters()),
-            ]);
+            $this->logger->alert(
+                $exception->getMessage(),
+                [
+                    'exception' => $exception,
+                    'context' => [
+                        'path' => 'order',
+                        'method' => 'get',
+                        'queryParameters' => $this->walkFilterVariants(),
+                    ],
+                ],
+            );
+            yield new RejectionResultBucket(
+                'There are some network difficulties. We could not properly connect to the Magento API. There is nothing we could no to fix this currently. Please contact the Magento administrator.',
+                $exception,
+            );
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
         }
