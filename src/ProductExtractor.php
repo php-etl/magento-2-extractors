@@ -12,53 +12,62 @@ use Psr\Http\Client\NetworkExceptionInterface;
 
 final class ProductExtractor implements ExtractorInterface
 {
-    private array $queryParameters = [
-        'searchCriteria[currentPage]' => 1,
-        'searchCriteria[pageSize]' => 100,
-    ];
-
     public function __construct(
-        private readonly \Psr\Log\LoggerInterface $logger,
-        private readonly \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
-        private readonly int $pageSize = 100,
-        /** @var FilterGroup[] $filters */
-        private readonly array $filters = [],
+        private \Psr\Log\LoggerInterface $logger,
+        private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
+        private QueryParameters $queryParameters,
+        private int $pageSize = 100,
     ) {
     }
 
-    private function compileQueryParameters(int $currentPage = 1): array
+    private function walkFilterVariants(int $currentPage = 1): \Traversable
     {
-        $parameters = $this->queryParameters;
-        $parameters['searchCriteria[currentPage]'] = $currentPage;
-        $parameters['searchCriteria[pageSize]'] = $this->pageSize;
+        yield from [
+            ...$this->queryParameters->walkVariants([]),
+            ...[
+                'searchCriteria[currentPage]' => $currentPage,
+                'searchCriteria[pageSize]' => $this->pageSize,
+            ],
+        ];
+    }
 
-        $filters = array_map(fn (FilterGroup $item, int $key) => $item->compileFilters($key), $this->filters, array_keys($this->filters));
-
-        return array_merge($parameters, ...$filters);
+    private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
+    {
+        return [
+            ...$parameters,
+            ...[
+                'searchCriteria[currentPage]' => $currentPage,
+                'searchCriteria[pageSize]' => $pageSize,
+            ],
+        ];
     }
 
     public function extract(): iterable
     {
+        $currentPage = null;
+        $pageCount = null;
         try {
-            $response = $this->client->catalogProductRepositoryV1GetListGet(
-                queryParameters: $this->compileQueryParameters(),
-            );
+            foreach ($this->queryParameters->walkVariants([]) as $parameters) {
+                $currentPage = 1;
+                $response = $this->client->catalogProductRepositoryV1GetListGet(
+                    queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
+                );
 
-            if (!$response instanceof \Kiboko\Magento\V2_1\Model\CatalogDataProductSearchResultsInterface
-                && !$response instanceof \Kiboko\Magento\V2_2\Model\CatalogDataProductSearchResultsInterface
-                && !$response instanceof \Kiboko\Magento\V2_3\Model\CatalogDataProductSearchResultsInterface
-                && !$response instanceof \Kiboko\Magento\V2_4\Model\CatalogDataProductSearchResultsInterface
-            ) {
-                return;
+                if (!$response instanceof \Kiboko\Magento\V2_1\Model\CatalogDataProductSearchResultsInterface
+                    && !$response instanceof \Kiboko\Magento\V2_2\Model\CatalogDataProductSearchResultsInterface
+                    && !$response instanceof \Kiboko\Magento\V2_3\Model\CatalogDataProductSearchResultsInterface
+                    && !$response instanceof \Kiboko\Magento\V2_4\Model\CatalogDataProductSearchResultsInterface
+                ) {
+                    return;
+                }
+
+                yield $this->processResponse($response);
             }
 
-            yield $this->processResponse($response);
 
-            $currentPage = 1;
-            $pageCount = ceil($response->getTotalCount() / $this->pageSize);
             while ($currentPage++ < $pageCount) {
                 $response = $this->client->catalogProductRepositoryV1GetListGet(
-                    queryParameters: $this->compileQueryParameters($currentPage),
+                    queryParameters: iterator_to_array($this->walkFilterVariants($currentPage)),
                 );
 
                 yield $this->processResponse($response);
@@ -71,9 +80,9 @@ final class ProductExtractor implements ExtractorInterface
                     'context' => [
                         'path' => 'product',
                         'method' => 'get',
-                        'queryParameters' => $this->compileQueryParameters(),
+                        'queryParameters' => $this->walkFilterVariants(),
                     ],
-                ]
+                ],
             );
             yield new RejectionResultBucket(
                 'There are some network difficulties. We could not properly connect to the Magento API. There is nothing we could no to fix this currently. Please contact the Magento administrator.',

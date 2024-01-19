@@ -16,6 +16,15 @@ final class QueryParameters
         return $this;
     }
 
+    public function withGroups(FilterGroup ...$group): self
+    {
+        foreach ($group as $item) {
+            $this->groups[] = $item;
+        }
+
+        return $this;
+    }
+
     /**
      * @return \Traversable<int, array>
      */

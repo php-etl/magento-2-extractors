@@ -18,6 +18,15 @@ class FilterGroup
         return $this;
     }
 
+    public function withFilters(FilterInterface ...$filter): self
+    {
+        foreach ($filter as $item) {
+            $this->filters[] = $item;
+        }
+
+        return $this;
+    }
+
     /**
      * @return \Traversable<int, array>
      */
