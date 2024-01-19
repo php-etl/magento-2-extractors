@@ -18,16 +18,13 @@ use Psr\Log\NullLogger;
 
 /**
  * @internal
- *
- * @coversNothing
  */
+#[\PHPUnit\Framework\Attributes\CoversNothing]
 final class CustomerExtractorTest extends TestCase
 {
     use ExtractorAssertTrait;
 
-    /**
-     * @test
-     */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function isSuccessful(): void
     {
         $customer = (new CustomerDataCustomerInterface())
