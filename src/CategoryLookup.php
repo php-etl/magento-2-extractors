@@ -15,12 +15,13 @@ final readonly class CategoryLookup implements TransformerInterface
 {
     public function __construct(
         private \Psr\Log\LoggerInterface $logger,
-        private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
+        private \Kiboko\Magento\Client $client,
         private CacheInterface $cache,
         private string $cacheKey,
         private CompiledMapperInterface $mapper,
         private string $mappingField,
-    ) {}
+    ) {
+    }
 
     public function transform(): \Generator
     {
@@ -34,15 +35,11 @@ final readonly class CategoryLookup implements TransformerInterface
                 $lookup = $this->cache->get(sprintf($this->cacheKey, $line[$this->mappingField]));
 
                 if (null === $lookup) {
-                    $lookup = $this->client->catalogCategoryRepositoryV1GetGet(
+                    $lookup = $this->client->getV1CategoriesCategoryId(
                         categoryId: (int) $line[$this->mappingField],
                     );
 
-                    if (!$lookup instanceof \Kiboko\Magento\V2_1\Model\CatalogDataCategoryInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_2\Model\CatalogDataCategoryInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_3\Model\CatalogDataCategoryInterface
-                        && !$lookup instanceof \Kiboko\Magento\V2_4\Model\CatalogDataCategoryInterface
-                    ) {
+                    if (!$lookup instanceof \Kiboko\Magento\Model\CatalogDataCategoryInterface) {
                         return;
                     }
 

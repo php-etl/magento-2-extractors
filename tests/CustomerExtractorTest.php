@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Kiboko\Magento\V2\Extractor;
+namespace Tests\Kiboko\Component\Flow\Magento2;
 
 use Kiboko\Component\Flow\Magento2\CustomerExtractor;
 use Kiboko\Component\Flow\Magento2\Filter;
@@ -10,32 +10,39 @@ use Kiboko\Component\Flow\Magento2\FilterGroup;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
-use Kiboko\Magento\V2_3\Client;
-use Kiboko\Magento\V2_3\Model\CustomerDataCustomerInterface;
-use Kiboko\Magento\V2_3\Model\CustomerDataCustomerSearchResultsInterface;
+use Kiboko\Magento\Client;
+use Kiboko\Magento\Model\CustomerDataCustomerInterface;
+use Kiboko\Magento\Model\CustomerDataCustomerSearchResultsInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
+/**
+ * @internal
+ */
+#[\PHPUnit\Framework\Attributes\CoversNothing]
 final class CustomerExtractorTest extends TestCase
 {
     use ExtractorAssertTrait;
 
-    public function testIsSuccessful(): void
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function isSuccessful(): void
     {
         $customer = (new CustomerDataCustomerInterface())
             ->setFirstname('John')
             ->setLastname('Doe')
-            ->setEmail('johndoe@example.com');
+            ->setEmail('johndoe@example.com')
+        ;
 
         $customer2 = (new CustomerDataCustomerInterface())
-            ->setFirstname('Seb')
-            ->setLastname('Parrat')
-            ->setEmail('seb@com');
+            ->setFirstname('John')
+            ->setLastname('Smith')
+            ->setEmail('john.smith@example.com')
+        ;
 
         $client = $this->createMock(Client::class);
         $client
             ->expects($this->once())
-            ->method('customerCustomerRepositoryV1GetListGet')
+            ->method('getV1CustomersSearch')
             ->willReturn(
                 (new CustomerDataCustomerSearchResultsInterface())
                     ->setItems([
@@ -43,7 +50,8 @@ final class CustomerExtractorTest extends TestCase
                         $customer2,
                     ])
                     ->setTotalCount(1)
-            );
+            )
+        ;
 
         $extractor = new CustomerExtractor(
             new NullLogger(),
@@ -58,7 +66,7 @@ final class CustomerExtractorTest extends TestCase
         $this->assertExtractorExtractsExactly(
             [
                 $customer,
-                $customer2
+                $customer2,
             ],
             $extractor
         );
