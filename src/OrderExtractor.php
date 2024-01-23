@@ -52,6 +52,7 @@ final class OrderExtractor implements ExtractorInterface
                 $response = $this->client->salesOrderRepositoryV1GetListGet(
                     queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
                 );
+                $pageCount = (int) ceil($response->getTotalCount() / $this->pageSize);
 
                 if (!$response instanceof \Kiboko\Magento\V2_1\Model\SalesDataOrderSearchResultInterface
                     && !$response instanceof \Kiboko\Magento\V2_2\Model\SalesDataOrderSearchResultInterface
@@ -62,15 +63,14 @@ final class OrderExtractor implements ExtractorInterface
                 }
 
                 yield $this->processResponse($response);
-            }
 
+                while ($currentPage++ < $pageCount) {
+                    $response = $this->client->salesOrderRepositoryV1GetListGet(
+                        queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
+                    );
 
-            while ($currentPage++ < $pageCount) {
-                $response = $this->client->salesOrderRepositoryV1GetListGet(
-                    queryParameters: iterator_to_array($this->walkFilterVariants($currentPage)),
-                );
-
-                yield $this->processResponse($response);
+                    yield $this->processResponse($response);
+                }
             }
         } catch (NetworkExceptionInterface $exception) {
             $this->logger->alert(

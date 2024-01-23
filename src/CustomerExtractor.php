@@ -53,6 +53,7 @@ final readonly class CustomerExtractor implements ExtractorInterface
                 $response = $this->client->customerCustomerRepositoryV1GetListGet(
                     queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
                 );
+                $pageCount = (int) ceil($response->getTotalCount() / $this->pageSize);
 
                 if (!$response instanceof \Kiboko\Magento\V2_1\Model\CustomerDataCustomerSearchResultsInterface
                     && !$response instanceof \Kiboko\Magento\V2_2\Model\CustomerDataCustomerSearchResultsInterface
@@ -63,15 +64,14 @@ final readonly class CustomerExtractor implements ExtractorInterface
                 }
 
                 yield $this->processResponse($response);
-            }
 
+                while ($currentPage++ < $pageCount) {
+                    $response = $this->client->customerCustomerRepositoryV1GetListGet(
+                        queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
+                    );
 
-            while ($currentPage++ < $pageCount) {
-                $response = $this->client->customerCustomerRepositoryV1GetListGet(
-                    queryParameters: iterator_to_array($this->walkFilterVariants($currentPage)),
-                );
-
-                yield $this->processResponse($response);
+                    yield $this->processResponse($response);
+                }
             }
         } catch (NetworkExceptionInterface $exception) {
             $this->logger->alert(
