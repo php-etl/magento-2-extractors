@@ -11,18 +11,19 @@ final class ArrayFilter implements FilterInterface, \IteratorAggregate
         public string $conditionType,
         public array $value,
         private readonly int $threshold = 200
-    ) {}
+    ) {
+    }
 
     /**
      * @return \Traversable<int, {field: string, value: string, conditionType: string}>
      */
     public function getIterator(): \Traversable
     {
-        $length = count($this->value);
+        $length = \count($this->value);
         for ($offset = 0; $offset < $length; $offset += $this->threshold) {
             yield [
                 'field' => $this->field,
-                'value' => implode(',', array_slice($this->value, $offset, $this->threshold, false)),
+                'value' => implode(',', \array_slice($this->value, $offset, $this->threshold, false)),
                 'conditionType' => $this->conditionType,
             ];
         }

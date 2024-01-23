@@ -30,7 +30,7 @@ final class QueryParameters
      */
     public function walkVariants(array $parameters): \Traversable
     {
-        if (count($this->groups) < 1) {
+        if (\count($this->groups) < 1) {
             return;
         }
 
@@ -40,7 +40,7 @@ final class QueryParameters
     private function buildFilters(array $parameters, int $groupIndex, FilterGroup $first, FilterGroup ...$next): \Traversable
     {
         foreach ($first->walkFilters($parameters, $groupIndex) as $current) {
-            if (count($next) >= 1) {
+            if (\count($next) >= 1) {
                 yield from $this->buildFilters($current, $groupIndex + 1, ...$next);
             } else {
                 yield $current;
