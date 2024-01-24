@@ -10,7 +10,7 @@ use Kiboko\Contract\Bucket\ResultBucketInterface;
 use Kiboko\Contract\Pipeline\ExtractorInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 
-final class ProductExtractor implements ExtractorInterface
+final readonly class ProductExtractor implements ExtractorInterface
 {
     public function __construct(
         private \Psr\Log\LoggerInterface $logger,
