@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Kiboko\Magento\V2\Extractor;
 
+use Kiboko\Component\Flow\Magento2\Filter\ScalarFilter;
+use Kiboko\Component\Flow\Magento2\FilterGroup;
 use Kiboko\Component\Flow\Magento2\OrderExtractor;
+use Kiboko\Component\Flow\Magento2\QueryParameters;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
@@ -39,6 +42,15 @@ final class OrderExtractorTest extends TestCase
         $extractor = new OrderExtractor(
             new NullLogger(),
             $client,
+            (new QueryParameters())
+                ->withGroup(
+                    (new FilterGroup())
+                        ->withFilter(new ScalarFilter('updated_at', 'eq', '2022-09-05')),
+                )
+                ->withGroup(
+                    (new FilterGroup())
+                        ->withFilter(new ScalarFilter('status', 'eq', 'complete')),
+                )
         );
 
         $this->assertExtractorExtractsExactly(
