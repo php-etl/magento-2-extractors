@@ -14,7 +14,7 @@ final readonly class CustomerExtractor implements ExtractorInterface
 {
     public function __construct(
         private \Psr\Log\LoggerInterface $logger,
-        private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
+        private \Kiboko\Magento\Client $client,
         private QueryParameters $queryParameters,
         private int $pageSize = 100,
     ) {
@@ -49,23 +49,19 @@ final readonly class CustomerExtractor implements ExtractorInterface
         try {
             foreach ($this->queryParameters->walkVariants([]) as $parameters) {
                 $currentPage = 1;
-                $response = $this->client->customerCustomerRepositoryV1GetListGet(
+                $response = $this->client->getV1CustomersSearch(
                     queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
                 );
                 $pageCount = (int) ceil($response->getTotalCount() / $this->pageSize);
 
-                if (!$response instanceof \Kiboko\Magento\V2_1\Model\CustomerDataCustomerSearchResultsInterface
-                    && !$response instanceof \Kiboko\Magento\V2_2\Model\CustomerDataCustomerSearchResultsInterface
-                    && !$response instanceof \Kiboko\Magento\V2_3\Model\CustomerDataCustomerSearchResultsInterface
-                    && !$response instanceof \Kiboko\Magento\V2_4\Model\CustomerDataCustomerSearchResultsInterface
-                ) {
+                if (!$response instanceof \Kiboko\Magento\Model\CustomerDataCustomerSearchResultsInterface) {
                     return;
                 }
 
                 yield $this->processResponse($response);
 
                 while ($currentPage++ < $pageCount) {
-                    $response = $this->client->customerCustomerRepositoryV1GetListGet(
+                    $response = $this->client->getV1CustomersSearch(
                         queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
                     );
 
@@ -95,11 +91,7 @@ final readonly class CustomerExtractor implements ExtractorInterface
 
     private function processResponse($response): ResultBucketInterface
     {
-        if ($response instanceof \Kiboko\Magento\V2_1\Model\ErrorResponse
-            || $response instanceof \Kiboko\Magento\V2_2\Model\ErrorResponse
-            || $response instanceof \Kiboko\Magento\V2_3\Model\ErrorResponse
-            || $response instanceof \Kiboko\Magento\V2_4\Model\ErrorResponse
-        ) {
+        if ($response instanceof \Kiboko\Magento\Model\ErrorResponse) {
             return new RejectionResultBucket($response->getMessage(), null, $response);
         }
 

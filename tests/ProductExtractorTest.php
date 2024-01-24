@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Kiboko\Magento\V2\Extractor;
+namespace Tests\Kiboko\Component\Flow\Magento2;
 
 use Kiboko\Component\Flow\Magento2\Filter\ScalarFilter;
 use Kiboko\Component\Flow\Magento2\FilterGroup;
@@ -11,9 +11,9 @@ use Kiboko\Component\Flow\Magento2\QueryParameters;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
-use Kiboko\Magento\V2_3\Client;
-use Kiboko\Magento\V2_3\Model\CatalogDataProductInterface;
-use Kiboko\Magento\V2_3\Model\CatalogDataProductSearchResultsInterface;
+use Kiboko\Magento\Client;
+use Kiboko\Magento\Model\CatalogDataProductInterface;
+use Kiboko\Magento\Model\CatalogDataProductSearchResultsInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
@@ -31,7 +31,7 @@ final class ProductExtractorTest extends TestCase
         $client = $this->createMock(Client::class);
         $client
             ->expects($this->once())
-            ->method('catalogProductRepositoryV1GetListGet')
+            ->method('getV1Products')
             ->willReturn(
                 (new CatalogDataProductSearchResultsInterface())
                     ->setItems([
