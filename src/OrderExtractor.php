@@ -6,103 +6,157 @@ namespace Kiboko\Component\Flow\Magento2;
 
 use Kiboko\Component\Bucket\AcceptanceResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
-use Kiboko\Contract\Bucket\ResultBucketInterface;
+use Kiboko\Contract\Bucket\RejectionResultBucketInterface;
 use Kiboko\Contract\Pipeline\ExtractorInterface;
+use Kiboko\Magento\Client;
+use Kiboko\Magento\Exception\GetV1OrdersUnauthorizedException;
+use Kiboko\Magento\Exception\UnexpectedStatusCodeException;
+use Kiboko\Magento\Model\ErrorResponse;
+use Kiboko\Magento\Model\SalesDataOrderInterface;
+use Kiboko\Magento\Model\SalesDataOrderSearchResultInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Log\LoggerInterface;
 
+/**
+ * @implements ExtractorInterface<SalesDataOrderInterface>
+ */
 final readonly class OrderExtractor implements ExtractorInterface
 {
     public function __construct(
-        private \Psr\Log\LoggerInterface $logger,
-        private \Kiboko\Magento\V2_1\Client|\Kiboko\Magento\V2_2\Client|\Kiboko\Magento\V2_3\Client|\Kiboko\Magento\V2_4\Client $client,
+        private LoggerInterface $logger,
+        private Client $client,
         private QueryParameters $queryParameters,
         private int $pageSize = 100,
     ) {
     }
 
-    private function walkFilterVariants(int $currentPage = 1): \Traversable
-    {
-        yield from [
-            ...$this->queryParameters->walkVariants([]),
-            ...[
-                'searchCriteria[currentPage]' => $currentPage,
-                'searchCriteria[pageSize]' => $this->pageSize,
-            ],
-        ];
-    }
-
+    /**
+     * @param array<string,string> $parameters
+     * @return array<string,string>
+     */
     private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
     {
         return [
             ...$parameters,
-            ...[
-                'searchCriteria[currentPage]' => $currentPage,
-                'searchCriteria[pageSize]' => $pageSize,
-            ],
+            'searchCriteria[currentPage]' => (string) $currentPage,
+            'searchCriteria[pageSize]' => (string) $pageSize,
         ];
+    }
+
+    /**
+     * @param ErrorResponse $response
+     * @param array<string,string> $parameters
+     * @return RejectionResultBucketInterface<SalesDataOrderInterface>
+     */
+    private function rejectErrorResponse(ErrorResponse $response, array $parameters, int $currentPage): RejectionResultBucketInterface
+    {
+        $this->logger->error(
+            $response->getMessage(),
+            [
+                'resource' => 'getV1Orders',
+                'method' => 'get',
+                'queryParameters' => $parameters,
+                'currentPage' => $currentPage,
+                'pageSize' => $this->pageSize,
+            ],
+        );
+        return new RejectionResultBucket($response->getMessage(), null);
+    }
+
+    /**
+     * @param array<string,string> $parameters
+     * @param int $currentPage
+     * @return RejectionResultBucketInterface<SalesDataOrderInterface>
+     */
+    private function rejectInvalidResponse(array $parameters, int $currentPage): RejectionResultBucketInterface
+    {
+        $this->logger->error(
+            $message = 'The result provided by the API client does not match the expected type. The connector compilation may have fetched incompatible versions.',
+            [
+                'resource' => 'getV1Orders',
+                'method' => 'get',
+                'queryParameters' => $parameters,
+                'currentPage' => $currentPage,
+                'pageSize' => $this->pageSize,
+            ],
+        );
+        return new RejectionResultBucket($message, null);
     }
 
     public function extract(): iterable
     {
-        $currentPage = null;
-        $pageCount = null;
-        try {
-            foreach ($this->queryParameters->walkVariants([]) as $parameters) {
+        foreach ($this->queryParameters->walkVariants() as $parameters) {
+            try {
                 $currentPage = 1;
-                $response = $this->client->salesOrderRepositoryV1GetListGet(
-                    queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
+                $response = $this->client->getV1Orders(
+                    queryParameters: $this->applyPagination($parameters, $currentPage, $this->pageSize),
                 );
-                $pageCount = (int) ceil($response->getTotalCount() / $this->pageSize);
-
-                if (!$response instanceof \Kiboko\Magento\V2_1\Model\SalesDataOrderSearchResultInterface
-                    && !$response instanceof \Kiboko\Magento\V2_2\Model\SalesDataOrderSearchResultInterface
-                    && !$response instanceof \Kiboko\Magento\V2_3\Model\SalesDataOrderSearchResultInterface
-                    && !$response instanceof \Kiboko\Magento\V2_4\Model\SalesDataOrderSearchResultInterface
-                ) {
+                if ($response instanceof ErrorResponse) {
+                    yield $this->rejectErrorResponse($response, $parameters, $currentPage);
                     return;
                 }
+                if (!$response instanceof SalesDataOrderSearchResultInterface) {
+                    yield $this->rejectInvalidResponse($parameters, $currentPage);
+                    return;
+                }
+                $pageCount = (int) ceil($response->getTotalCount() / $this->pageSize);
 
-                yield $this->processResponse($response);
+                yield new AcceptanceResultBucket(...$response->getItems());
 
                 while ($currentPage++ < $pageCount) {
-                    $response = $this->client->salesOrderRepositoryV1GetListGet(
-                        queryParameters: $this->applyPagination(iterator_to_array($parameters), $currentPage, $this->pageSize),
+                    $response = $this->client->getV1Orders(
+                        queryParameters: $this->applyPagination($parameters, $currentPage, $this->pageSize),
                     );
+                    if ($response instanceof ErrorResponse) {
+                        yield $this->rejectErrorResponse($response, $parameters, $currentPage);
+                        return;
+                    }
+                    if (!$response instanceof SalesDataOrderSearchResultInterface) {
+                        yield $this->rejectInvalidResponse($parameters, $currentPage);
+                        return;
+                    }
 
-                    yield $this->processResponse($response);
+                    yield new AcceptanceResultBucket(...$response->getItems());
                 }
-            }
-        } catch (NetworkExceptionInterface $exception) {
-            $this->logger->alert(
-                $exception->getMessage(),
-                [
-                    'exception' => $exception,
-                    'context' => [
-                        'path' => 'order',
+            } catch (NetworkExceptionInterface $exception) {
+                $this->logger->critical(
+                    $exception->getMessage(),
+                    [
+                        'exception' => $exception,
+                        'resource' => 'getV1Orders',
                         'method' => 'get',
-                        'queryParameters' => $this->walkFilterVariants(),
+                        'queryParameters' => $parameters,
+                        'currentPage' => $currentPage,
+                        'pageSize' => $this->pageSize,
                     ],
-                ],
-            );
-            yield new RejectionResultBucket(
-                'There are some network difficulties. We could not properly connect to the Magento API. There is nothing we could no to fix this currently. Please contact the Magento administrator.',
-                $exception,
-            );
-        } catch (\Exception $exception) {
-            $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
+                );
+                yield new RejectionResultBucket(
+                    'There are some network difficulties. We could not properly connect to the Magento API. There is nothing we could no to fix this currently. Please contact the Magento administrator.',
+                    $exception,
+                );
+                return;
+            } catch (GetV1OrdersUnauthorizedException $exception) {
+                $this->logger->warning($exception->getMessage(), ['exception' => $exception]);
+                yield new RejectionResultBucket(
+                    'The source API responded we are not authorized to access this resource. Aborting. Please check the credentials you provided.',
+                    $exception,
+                );
+                return;
+            } catch (UnexpectedStatusCodeException $exception) {
+                $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
+                yield new RejectionResultBucket(
+                    'The source API responded with a status we did not expect. Aborting. Please check the availability of the source API and if there are no rate limiting or redirections active.',
+                    $exception,
+                );
+                return;
+            } catch (\Throwable $exception) {
+                $this->logger->emergency($exception->getMessage(), ['exception' => $exception]);
+                yield new RejectionResultBucket(
+                    'The client failed critically. Aborting. Please contact customer support or your system administrator.',
+                    $exception,
+                );
+                return;
+            }
         }
-    }
-
-    private function processResponse($response): ResultBucketInterface
-    {
-        if ($response instanceof \Kiboko\Magento\V2_1\Model\ErrorResponse
-            || $response instanceof \Kiboko\Magento\V2_2\Model\ErrorResponse
-            || $response instanceof \Kiboko\Magento\V2_3\Model\ErrorResponse
-            || $response instanceof \Kiboko\Magento\V2_4\Model\ErrorResponse
-        ) {
-            return new RejectionResultBucket($response);
-        }
-
-        return new AcceptanceResultBucket(...$response->getItems());
     }
 }
