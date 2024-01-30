@@ -17,7 +17,7 @@ final class ScalarFilterTest  extends TestCase
         $this->assertCount(1, iterator_to_array($filter->getIterator(), false));
         $this->assertContains([
             'field' => 'foo',
-            'value' => 4,
+            'value' => '4',
             'conditionType' => 'eq',
         ], $filter);
     }

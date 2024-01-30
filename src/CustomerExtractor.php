@@ -54,7 +54,7 @@ final readonly class CustomerExtractor implements ExtractorInterface
         $this->logger->error(
             $response->getMessage(),
             [
-                'resource' => 'getV1Orders',
+                'resource' => 'getV1CustomersSearch',
                 'method' => 'get',
                 'queryParameters' => $parameters,
                 'currentPage' => $currentPage,
@@ -73,7 +73,7 @@ final readonly class CustomerExtractor implements ExtractorInterface
         $this->logger->error(
             $message = 'The result provided by the API client does not match the expected type. The connector compilation may have fetched incompatible versions.',
             [
-                'resource' => 'getV1Orders',
+                'resource' => 'getV1CustomersSearch',
                 'method' => 'get',
                 'queryParameters' => $parameters,
                 'currentPage' => $currentPage,
