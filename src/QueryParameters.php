@@ -16,11 +16,9 @@ final class QueryParameters
         return $this;
     }
 
-    public function withGroups(FilterGroup ...$group): self
+    public function withGroups(FilterGroup ...$groups): self
     {
-        foreach ($group as $item) {
-            $this->groups[] = $item;
-        }
+        array_push($this->groups,  ...$groups);
 
         return $this;
     }
