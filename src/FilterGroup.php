@@ -21,7 +21,7 @@ class FilterGroup
 
     public function withFilters(FilterInterface ...$filters): self
     {
-        array_push($this->filters, ...$filters);
+        array_push($this->filters,  ...$filters);
 
         return $this;
     }
@@ -32,7 +32,7 @@ class FilterGroup
      */
     public function walkFilters(array $parameters, int $groupIndex = 0): \Traversable
     {
-        if (count($this->filters) < 1) {
+        if (\count($this->filters) < 1) {
             return;
         }
 
@@ -52,10 +52,10 @@ class FilterGroup
                     sprintf('searchCriteria[filterGroups][%s][filters][%s][field]', $groupIndex, $filterIndex) => $current['field'],
                     sprintf('searchCriteria[filterGroups][%s][filters][%s][value]', $groupIndex, $filterIndex) => $current['value'],
                     sprintf('searchCriteria[filterGroups][%s][filters][%s][conditionType]', $groupIndex, $filterIndex) => $current['conditionType'],
-                ]
+                ],
             ];
 
-            if (count($next) >= 1) {
+            if (\count($next) >= 1) {
                 yield from $this->buildFilters($childParameters, $groupIndex, $filterIndex + 1, ...$next);
             } else {
                 yield $childParameters;
@@ -63,22 +63,22 @@ class FilterGroup
         }
     }
 
-    public function greaterThan(string $field, int|float|string|\DateTimeInterface $value): self
+    public function greaterThan(string $field, \DateTimeInterface|float|int|string $value): self
     {
         return $this->withFilter(new ScalarFilter($field, 'gt', $value));
     }
 
-    public function lowerThan(string $field, int|float|string|\DateTimeInterface $value): self
+    public function lowerThan(string $field, \DateTimeInterface|float|int|string $value): self
     {
         return $this->withFilter(new ScalarFilter($field, 'lt', $value));
     }
 
-    public function greaterThanOrEqual(string $field, int|float|string|\DateTimeInterface $value): self
+    public function greaterThanOrEqual(string $field, \DateTimeInterface|float|int|string $value): self
     {
         return $this->withFilter(new ScalarFilter($field, 'gteq', $value));
     }
 
-    public function lowerThanOrEqual(string $field, int|float|string|\DateTimeInterface $value): self
+    public function lowerThanOrEqual(string $field, \DateTimeInterface|float|int|string $value): self
     {
         return $this->withFilter(new ScalarFilter($field, 'lteq', $value));
     }
