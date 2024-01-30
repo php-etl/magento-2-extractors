@@ -1,4 +1,4 @@
-name: Quality (PHPStan lvl 5)
+name: Quality (PHPStan lvl 7)
 on: push
 jobs:
     cs-fixer:
@@ -32,4 +32,4 @@ jobs:
               uses: php-actions/phpstan@v3
               with:
                   path: src/
-                  level: 5
+                  level: 7

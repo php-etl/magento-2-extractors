@@ -9,6 +9,7 @@ use Kiboko\Component\Flow\Magento2\Filter\ScalarFilter;
 
 class FilterGroup
 {
+    /** @var array<array-key,FilterInterface> */
     private array $filters = [];
 
     public function withFilter(FilterInterface $filter): self
@@ -28,7 +29,8 @@ class FilterGroup
     }
 
     /**
-     * @return \Traversable<int, array>
+     * @param array<string,string> $parameters
+     * @return \Traversable<int,array<string,string>>
      */
     public function walkFilters(array $parameters, int $groupIndex = 0): \Traversable
     {
@@ -39,6 +41,10 @@ class FilterGroup
         yield from $this->buildFilters($parameters, $groupIndex, 1, ...$this->filters);
     }
 
+    /**
+     * @param array<string,string> $parameters
+     * @return \Traversable<int,array<string,string>>
+     */
     private function buildFilters(array $parameters, int $groupIndex, int $filterIndex, FilterInterface $first, FilterInterface ...$next): \Traversable
     {
         foreach ($first as $current) {

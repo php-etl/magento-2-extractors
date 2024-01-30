@@ -26,9 +26,10 @@ final class QueryParameters
     }
 
     /**
-     * @return \Traversable<int, array>
+     * @param array<string,string> $parameters
+     * @return \Traversable<int,array<string,string>>
      */
-    public function walkVariants(array $parameters): \Traversable
+    public function walkVariants(array $parameters = []): \Traversable
     {
         if (\count($this->groups) < 1) {
             return;
@@ -37,6 +38,10 @@ final class QueryParameters
         yield from $this->buildFilters($parameters, 0, ...$this->groups);
     }
 
+    /**
+     * @param array<string,string> $parameters
+     * @return \Traversable<int,array<string,string>>
+     */
     private function buildFilters(array $parameters, int $groupIndex, FilterGroup $first, FilterGroup ...$next): \Traversable
     {
         foreach ($first->walkFilters($parameters, $groupIndex) as $current) {
