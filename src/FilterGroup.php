@@ -19,11 +19,9 @@ class FilterGroup
         return $this;
     }
 
-    public function withFilters(FilterInterface ...$filter): self
+    public function withFilters(FilterInterface ...$filters): self
     {
-        foreach ($filter as $item) {
-            $this->filters[] = $item;
-        }
+        array_push($this->filters, ...$filters);
 
         return $this;
     }

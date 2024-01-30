@@ -1,4 +1,4 @@
-name: PHPStan level 8
+name: PHPStan level 9
 on: push
 jobs:
   phpstan-9:
