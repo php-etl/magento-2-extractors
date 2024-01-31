@@ -21,6 +21,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @template InputType of array
  * @template OutputType of InputType|array
+ *
  * @implements TransformerInterface<InputType, OutputType>
  */
 final readonly class ProductOptionsLookup implements TransformerInterface
@@ -49,6 +50,7 @@ final readonly class ProductOptionsLookup implements TransformerInterface
                 'method' => 'get',
             ],
         );
+
         return new RejectionResultBucket($response->getMessage(), null);
     }
 
@@ -64,16 +66,18 @@ final readonly class ProductOptionsLookup implements TransformerInterface
                 'method' => 'get',
             ],
         );
+
         return new RejectionResultBucket($message, null);
     }
 
     /**
      * @param InputType $line
+     *
      * @return OutputType
      */
     public function passThrough(array $line): array
     {
-        /** @var OutputType $line */
+        /* @var OutputType $line */
         return $line;
     }
 
@@ -81,7 +85,7 @@ final readonly class ProductOptionsLookup implements TransformerInterface
     {
         $line = yield new EmptyResultBucket();
         while (true) {
-            if ($line === null) {
+            if (null === $line) {
                 $line = yield new EmptyResultBucket();
                 continue;
             }
@@ -101,7 +105,7 @@ final readonly class ProductOptionsLookup implements TransformerInterface
                     continue;
                 }
 
-                if (!is_array($lookup) || !array_is_list($lookup)) {
+                if (!\is_array($lookup) || !array_is_list($lookup)) {
                     $line = yield $this->rejectInvalidResponse();
                     continue;
                 }
@@ -160,12 +164,13 @@ final readonly class ProductOptionsLookup implements TransformerInterface
                     $exception,
                     $this->passThrough($line),
                 );
+
                 return;
             }
 
             reset($lookup);
             $current = current($lookup);
-            if (count($lookup) <= 0 || $current === false) {
+            if (\count($lookup) <= 0 || false === $current) {
                 $this->logger->critical(
                     'The lookup did not find any related resource. The lookup operation had no effect.',
                     [

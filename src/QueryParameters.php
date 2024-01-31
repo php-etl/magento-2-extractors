@@ -18,13 +18,14 @@ final class QueryParameters
 
     public function withGroups(FilterGroup ...$groups): self
     {
-        array_push($this->groups,  ...$groups);
+        array_push($this->groups, ...$groups);
 
         return $this;
     }
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return \Traversable<int,array<string,string>>
      */
     public function walkVariants(array $parameters = []): \Traversable
@@ -38,6 +39,7 @@ final class QueryParameters
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return \Traversable<int,array<string,string>>
      */
     private function buildFilters(array $parameters, int $groupIndex, FilterGroup $first, FilterGroup ...$next): \Traversable
