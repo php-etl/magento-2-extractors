@@ -31,6 +31,7 @@ final readonly class ProductExtractor implements ExtractorInterface
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return array<string,string>
      */
     private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
@@ -44,6 +45,7 @@ final readonly class ProductExtractor implements ExtractorInterface
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return RejectionResultBucketInterface<CatalogDataProductInterface>
      */
     private function rejectErrorResponse(ErrorResponse $response, array $parameters, int $currentPage): RejectionResultBucketInterface
@@ -58,11 +60,13 @@ final readonly class ProductExtractor implements ExtractorInterface
                 'pageSize' => $this->pageSize,
             ],
         );
+
         return new RejectionResultBucket($response->getMessage(), null);
     }
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return RejectionResultBucketInterface<CatalogDataProductInterface>
      */
     private function rejectInvalidResponse(array $parameters, int $currentPage): RejectionResultBucketInterface
@@ -77,6 +81,7 @@ final readonly class ProductExtractor implements ExtractorInterface
                 'pageSize' => $this->pageSize,
             ],
         );
+
         return new RejectionResultBucket($message, null);
     }
 
@@ -90,10 +95,12 @@ final readonly class ProductExtractor implements ExtractorInterface
                 );
                 if ($response instanceof ErrorResponse) {
                     yield $this->rejectErrorResponse($response, $parameters, $currentPage);
+
                     return;
                 }
                 if (!$response instanceof CatalogDataProductSearchResultsInterface) {
                     yield $this->rejectInvalidResponse($parameters, $currentPage);
+
                     return;
                 }
                 $pageCount = (int) ceil($response->getTotalCount() / $this->pageSize);
@@ -106,10 +113,12 @@ final readonly class ProductExtractor implements ExtractorInterface
                     );
                     if ($response instanceof ErrorResponse) {
                         yield $this->rejectErrorResponse($response, $parameters, $currentPage);
+
                         return;
                     }
                     if (!$response instanceof CatalogDataProductSearchResultsInterface) {
                         yield $this->rejectInvalidResponse($parameters, $currentPage);
+
                         return;
                     }
 
@@ -131,6 +140,7 @@ final readonly class ProductExtractor implements ExtractorInterface
                     'There are some network difficulties. We could not properly connect to the Magento API. There is nothing we could no to fix this currently. Please contact the Magento administrator.',
                     $exception,
                 );
+
                 return;
             } catch (UnexpectedStatusCodeException $exception) {
                 $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
@@ -138,6 +148,7 @@ final readonly class ProductExtractor implements ExtractorInterface
                     'The source API responded with a status we did not expect. Aborting. Please check the availability of the source API and if there are no rate limiting or redirections active.',
                     $exception,
                 );
+
                 return;
             } catch (\Throwable $exception) {
                 $this->logger->emergency($exception->getMessage(), ['exception' => $exception]);
@@ -145,6 +156,7 @@ final readonly class ProductExtractor implements ExtractorInterface
                     'The client failed critically. Aborting. Please contact customer support or your system administrator.',
                     $exception,
                 );
+
                 return;
             }
         }

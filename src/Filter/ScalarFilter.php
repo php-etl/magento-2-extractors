@@ -12,8 +12,9 @@ final class ScalarFilter implements FilterInterface, \IteratorAggregate
     public function __construct(
         public string $field,
         public string $conditionType,
-        public bool|int|float|string|\DateTimeInterface $value,
-    ) {}
+        public bool|\DateTimeInterface|float|int|string $value,
+    ) {
+    }
 
     /**
      * @return \Traversable<int,array{"field":string,"value":string,"conditionType":string}>

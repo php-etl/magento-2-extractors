@@ -21,13 +21,14 @@ class FilterGroup
 
     public function withFilters(FilterInterface ...$filters): self
     {
-        array_push($this->filters,  ...$filters);
+        array_push($this->filters, ...$filters);
 
         return $this;
     }
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return \Traversable<int,array<string,string>>
      */
     public function walkFilters(array $parameters, int $groupIndex = 0): \Traversable
@@ -41,6 +42,7 @@ class FilterGroup
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return \Traversable<int,array<string,string>>
      */
     private function buildFilters(array $parameters, int $groupIndex, int $filterIndex, FilterInterface $first, FilterInterface ...$next): \Traversable
