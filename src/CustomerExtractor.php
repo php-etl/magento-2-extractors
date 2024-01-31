@@ -45,7 +45,6 @@ final readonly class CustomerExtractor implements ExtractorInterface
     }
 
     /**
-     * @param ErrorResponse $response
      * @param array<string,string> $parameters
      * @return RejectionResultBucketInterface<CustomerDataCustomerInterface>
      */
@@ -66,7 +65,6 @@ final readonly class CustomerExtractor implements ExtractorInterface
 
     /**
      * @param array<string,string> $parameters
-     * @param int $currentPage
      * @return RejectionResultBucketInterface<CustomerDataCustomerInterface>
      */
     private function rejectInvalidResponse(array $parameters, int $currentPage): RejectionResultBucketInterface
