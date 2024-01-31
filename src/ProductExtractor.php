@@ -43,7 +43,6 @@ final readonly class ProductExtractor implements ExtractorInterface
     }
 
     /**
-     * @param ErrorResponse $response
      * @param array<string,string> $parameters
      * @return RejectionResultBucketInterface<CatalogDataProductInterface>
      */
@@ -64,7 +63,6 @@ final readonly class ProductExtractor implements ExtractorInterface
 
     /**
      * @param array<string,string> $parameters
-     * @param int $currentPage
      * @return RejectionResultBucketInterface<CatalogDataProductInterface>
      */
     private function rejectInvalidResponse(array $parameters, int $currentPage): RejectionResultBucketInterface

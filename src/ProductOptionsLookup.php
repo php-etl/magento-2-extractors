@@ -38,7 +38,6 @@ final readonly class ProductOptionsLookup implements TransformerInterface
     }
 
     /**
-     * @param ErrorResponse $response
      * @return RejectionResultBucketInterface<OutputType>
      */
     private function rejectErrorResponse(ErrorResponse $response): RejectionResultBucketInterface
