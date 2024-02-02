@@ -16,6 +16,7 @@ use Kiboko\Magento\Model\SalesDataOrderInterface;
 use Kiboko\Magento\Model\SalesDataOrderSearchResultInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 
 /**
  * @implements ExtractorInterface<SalesDataOrderInterface>
@@ -32,19 +33,21 @@ final readonly class OrderExtractor implements ExtractorInterface
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return array<string,string>
      */
     private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
     {
         return [
             ...$parameters,
-            'searchCriteria[currentPage]' => (string) $currentPage,
-            'searchCriteria[pageSize]' => (string) $pageSize,
+            'searchCriteria[currentPage]' => $currentPage,
+            'searchCriteria[pageSize]' => $pageSize,
         ];
     }
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return RejectionResultBucketInterface<SalesDataOrderInterface>
      */
     private function rejectErrorResponse(ErrorResponse $response, array $parameters, int $currentPage): RejectionResultBucketInterface
@@ -59,11 +62,13 @@ final readonly class OrderExtractor implements ExtractorInterface
                 'pageSize' => $this->pageSize,
             ],
         );
+
         return new RejectionResultBucket($response->getMessage(), null);
     }
 
     /**
      * @param array<string,string> $parameters
+     *
      * @return RejectionResultBucketInterface<SalesDataOrderInterface>
      */
     private function rejectInvalidResponse(array $parameters, int $currentPage): RejectionResultBucketInterface
@@ -78,6 +83,28 @@ final readonly class OrderExtractor implements ExtractorInterface
                 'pageSize' => $this->pageSize,
             ],
         );
+
+        return new RejectionResultBucket($message, null);
+    }
+
+    /**
+     * @param array<string,string> $parameters
+     *
+     * @return RejectionResultBucketInterface<SalesDataOrderInterface>
+     */
+    private function rejectUndefinedOptionsResponse(UndefinedOptionsException $response, array $parameters, int $currentPage): RejectionResultBucketInterface
+    {
+        $this->logger->error(
+            $message = 'The result provided by the API client does not match the expected query parameters. The connector compilation may have fetched incompatible versions.',
+            [
+                'resource' => 'getV1Orders',
+                'method' => 'get',
+                'queryParameters' => $parameters,
+                'currentPage' => $currentPage,
+                'pageSize' => $this->pageSize,
+            ],
+        );
+
         return new RejectionResultBucket($message, null);
     }
 
@@ -91,10 +118,17 @@ final readonly class OrderExtractor implements ExtractorInterface
                 );
                 if ($response instanceof ErrorResponse) {
                     yield $this->rejectErrorResponse($response, $parameters, $currentPage);
+
+                    return;
+                }
+                if ($response instanceof UndefinedOptionsException) {
+                    yield $this->rejectUndefinedOptionsResponse($response, $parameters, $currentPage);
+
                     return;
                 }
                 if (!$response instanceof SalesDataOrderSearchResultInterface) {
                     yield $this->rejectInvalidResponse($parameters, $currentPage);
+
                     return;
                 }
                 $pageCount = (int) ceil($response->getTotalCount() / $this->pageSize);
@@ -107,10 +141,17 @@ final readonly class OrderExtractor implements ExtractorInterface
                     );
                     if ($response instanceof ErrorResponse) {
                         yield $this->rejectErrorResponse($response, $parameters, $currentPage);
+
+                        return;
+                    }
+                    if ($response instanceof UndefinedOptionsException) {
+                        yield $this->rejectUndefinedOptionsResponse($response, $parameters, $currentPage);
+
                         return;
                     }
                     if (!$response instanceof SalesDataOrderSearchResultInterface) {
                         yield $this->rejectInvalidResponse($parameters, $currentPage);
+
                         return;
                     }
 
@@ -132,6 +173,7 @@ final readonly class OrderExtractor implements ExtractorInterface
                     'There are some network difficulties. We could not properly connect to the Magento API. There is nothing we could no to fix this currently. Please contact the Magento administrator.',
                     $exception,
                 );
+
                 return;
             } catch (GetV1OrdersUnauthorizedException $exception) {
                 $this->logger->warning($exception->getMessage(), ['exception' => $exception]);
@@ -139,6 +181,7 @@ final readonly class OrderExtractor implements ExtractorInterface
                     'The source API responded we are not authorized to access this resource. Aborting. Please check the credentials you provided.',
                     $exception,
                 );
+
                 return;
             } catch (UnexpectedStatusCodeException $exception) {
                 $this->logger->critical($exception->getMessage(), ['exception' => $exception]);
@@ -146,6 +189,7 @@ final readonly class OrderExtractor implements ExtractorInterface
                     'The source API responded with a status we did not expect. Aborting. Please check the availability of the source API and if there are no rate limiting or redirections active.',
                     $exception,
                 );
+
                 return;
             } catch (\Throwable $exception) {
                 $this->logger->emergency($exception->getMessage(), ['exception' => $exception]);
@@ -153,6 +197,7 @@ final readonly class OrderExtractor implements ExtractorInterface
                     'The client failed critically. Aborting. Please contact customer support or your system administrator.',
                     $exception,
                 );
+
                 return;
             }
         }

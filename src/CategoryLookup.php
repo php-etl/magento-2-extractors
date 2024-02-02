@@ -21,6 +21,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @template InputType of array
  * @template OutputType of InputType|array
+ *
  * @implements TransformerInterface<InputType, OutputType>
  */
 final readonly class CategoryLookup implements TransformerInterface
@@ -37,6 +38,8 @@ final readonly class CategoryLookup implements TransformerInterface
     }
 
     /**
+     * @param  ErrorResponse $response
+     *
      * @return RejectionResultBucketInterface<OutputType>
      */
     private function rejectErrorResponse(ErrorResponse $response): RejectionResultBucketInterface
@@ -48,6 +51,7 @@ final readonly class CategoryLookup implements TransformerInterface
                 'method' => 'get',
             ],
         );
+
         return new RejectionResultBucket($response->getMessage(), null);
     }
 
@@ -63,16 +67,18 @@ final readonly class CategoryLookup implements TransformerInterface
                 'method' => 'get',
             ],
         );
+
         return new RejectionResultBucket($message, null);
     }
 
     /**
      * @param InputType $line
+     *
      * @return OutputType
      */
     public function passThrough(array $line): array
     {
-        /** @var OutputType $line */
+        /* @var OutputType $line */
         return $line;
     }
 
@@ -80,13 +86,13 @@ final readonly class CategoryLookup implements TransformerInterface
     {
         $line = yield new EmptyResultBucket();
         while (true) {
-            if ($line === null) {
+            if (null === $line) {
                 $line = yield new EmptyResultBucket();
                 continue;
             }
 
             if (null === $line[$this->mappingField]) {
-                $line = yield new AcceptanceResultBucket($this->passThrough($line));
+                $line = yield new AcceptanceResultBucket($line);
                 continue;
             }
 
@@ -154,6 +160,7 @@ final readonly class CategoryLookup implements TransformerInterface
                     $exception,
                     $this->passThrough($line),
                 );
+
                 return;
             }
 
