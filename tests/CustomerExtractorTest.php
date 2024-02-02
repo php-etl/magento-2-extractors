@@ -11,9 +11,9 @@ use Kiboko\Component\Flow\Magento2\QueryParameters;
 use Kiboko\Component\PHPUnitExtension\Assert\ExtractorAssertTrait;
 use Kiboko\Component\PHPUnitExtension\PipelineRunner;
 use Kiboko\Contract\Pipeline\PipelineRunnerInterface;
-use Kiboko\Magento\V2_3\Client;
-use Kiboko\Magento\V2_3\Model\CustomerDataCustomerInterface;
-use Kiboko\Magento\V2_3\Model\CustomerDataCustomerSearchResultsInterface;
+use Kiboko\Magento\Client;
+use Kiboko\Magento\Model\CustomerDataCustomerInterface;
+use Kiboko\Magento\Model\CustomerDataCustomerSearchResultsInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
@@ -36,7 +36,7 @@ final class CustomerExtractorTest extends TestCase
         $client = $this->createMock(Client::class);
         $client
             ->expects($this->once())
-            ->method('customerCustomerRepositoryV1GetListGet')
+            ->method('getV1CustomersSearch')
             ->willReturn(
                 (new CustomerDataCustomerSearchResultsInterface())
                     ->setItems([

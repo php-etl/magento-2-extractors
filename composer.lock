@@ -618,12 +618,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-etl/magento2-api-client.git",
-                "reference": "46a2c89a5275af40809f9c045577f22b0e53dce9"
+                "reference": "a5d87f2570540e3dbaf19066a81b0cacf84717f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/46a2c89a5275af40809f9c045577f22b0e53dce9",
-                "reference": "46a2c89a5275af40809f9c045577f22b0e53dce9",
+                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/a5d87f2570540e3dbaf19066a81b0cacf84717f8",
+                "reference": "a5d87f2570540e3dbaf19066a81b0cacf84717f8",
                 "shasum": ""
             },
             "require": {
@@ -643,7 +643,10 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Kiboko\\Magento\\": "src"
+                    "Kiboko\\Magento\\": [
+                        "src/",
+                        "generated/"
+                    ]
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -661,7 +664,7 @@
                 "issues": "https://github.com/php-etl/magento2-api-client/issues",
                 "source": "https://github.com/php-etl/magento2-api-client/tree/2.4"
             },
-            "time": "2024-01-22T09:20:52+00:00"
+            "time": "2024-02-01T15:52:31+00:00"
         },
         {
             "name": "php-etl/mapping-contracts",

@@ -9,6 +9,7 @@ use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Bucket\RejectionResultBucketInterface;
 use Kiboko\Contract\Pipeline\ExtractorInterface;
 use Kiboko\Magento\Client;
+use Kiboko\Magento\Endpoint\GetV1Orders;
 use Kiboko\Magento\Exception\GetV1OrdersUnauthorizedException;
 use Kiboko\Magento\Exception\UnexpectedStatusCodeException;
 use Kiboko\Magento\Model\ErrorResponse;
@@ -16,6 +17,7 @@ use Kiboko\Magento\Model\SalesDataOrderInterface;
 use Kiboko\Magento\Model\SalesDataOrderSearchResultInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 
 /**
  * @implements ExtractorInterface<SalesDataOrderInterface>
@@ -33,14 +35,14 @@ final readonly class OrderExtractor implements ExtractorInterface
     /**
      * @param array<string,string> $parameters
      *
-     * @return array<string,string>
+     * @return array<string,mixed>
      */
     private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
     {
         return [
             ...$parameters,
-            'searchCriteria[currentPage]' => (string) $currentPage,
-            'searchCriteria[pageSize]' => (string) $pageSize,
+            'searchCriteria[currentPage]' => $currentPage,
+            'searchCriteria[pageSize]' => $pageSize,
         ];
     }
 
@@ -86,6 +88,27 @@ final readonly class OrderExtractor implements ExtractorInterface
         return new RejectionResultBucket($message, null);
     }
 
+    /**
+     * @param array<string,string> $parameters
+     *
+     * @return RejectionResultBucketInterface<SalesDataOrderInterface>
+     */
+    private function rejectUndefinedOptionsResponse(UndefinedOptionsException $response, array $parameters, int $currentPage): RejectionResultBucketInterface
+    {
+        $this->logger->error(
+            $message = 'The result provided by the API client does not match the expected query parameters. The connector compilation may have fetched incompatible versions.',
+            [
+                'resource' => 'getV1Orders',
+                'method' => 'get',
+                'queryParameters' => $parameters,
+                'currentPage' => $currentPage,
+                'pageSize' => $this->pageSize,
+            ],
+        );
+
+        return new RejectionResultBucket($message, null);
+    }
+
     public function extract(): iterable
     {
         foreach ($this->queryParameters->walkVariants() as $parameters) {
@@ -96,6 +119,11 @@ final readonly class OrderExtractor implements ExtractorInterface
                 );
                 if ($response instanceof ErrorResponse) {
                     yield $this->rejectErrorResponse($response, $parameters, $currentPage);
+
+                    return;
+                }
+                if ($response instanceof UndefinedOptionsException) {
+                    yield $this->rejectUndefinedOptionsResponse($response, $parameters, $currentPage);
 
                     return;
                 }
@@ -114,6 +142,11 @@ final readonly class OrderExtractor implements ExtractorInterface
                     );
                     if ($response instanceof ErrorResponse) {
                         yield $this->rejectErrorResponse($response, $parameters, $currentPage);
+
+                        return;
+                    }
+                    if ($response instanceof UndefinedOptionsException) {
+                        yield $this->rejectUndefinedOptionsResponse($response, $parameters, $currentPage);
 
                         return;
                     }
