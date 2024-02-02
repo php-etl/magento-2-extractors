@@ -38,8 +38,6 @@ final readonly class CategoryLookup implements TransformerInterface
     }
 
     /**
-     * @param  ErrorResponse $response
-     *
      * @return RejectionResultBucketInterface<OutputType>
      */
     private function rejectErrorResponse(ErrorResponse $response): RejectionResultBucketInterface
