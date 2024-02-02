@@ -11,9 +11,9 @@ use Kiboko\Contract\Bucket\RejectionResultBucketInterface;
 use Kiboko\Contract\Mapping\CompiledMapperInterface;
 use Kiboko\Contract\Pipeline\TransformerInterface;
 use Kiboko\Magento\Client;
-use Kiboko\Magento\Exception\GetV1CategoriesCategoryIdBadRequestException;
+use Kiboko\Magento\Exception\GetV1ProductsAttributesAttributeCodeOptionsBadRequestException;
 use Kiboko\Magento\Exception\UnexpectedStatusCodeException;
-use Kiboko\Magento\Model\CatalogDataCategoryInterface;
+use Kiboko\Magento\Model\EavDataAttributeOptionInterface;
 use Kiboko\Magento\Model\ErrorResponse;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Log\LoggerInterface;
@@ -22,30 +22,31 @@ use Psr\Log\LoggerInterface;
  * @template InputType of array
  * @template OutputType of InputType|array
  *
- * @implements TransformerInterface<InputType>
+ * @implements TransformerInterface<InputType, OutputType>
  */
-final readonly class CategoryLookup implements TransformerInterface
+final readonly class ProductOptionsLookup implements TransformerInterface
 {
     /**
-     * @param CompiledMapperInterface<CatalogDataCategoryInterface, InputType, OutputType> $mapper
+     * @param CompiledMapperInterface<EavDataAttributeOptionInterface, InputType, OutputType> $mapper
      */
     public function __construct(
         private LoggerInterface $logger,
         private Client $client,
         private CompiledMapperInterface $mapper,
         private string $mappingField,
+        private string $attributeCode,
     ) {
     }
 
     /**
-     * @return RejectionResultBucketInterface<string|null>
+     * @return RejectionResultBucketInterface<OutputType>
      */
     private function rejectErrorResponse(ErrorResponse $response): RejectionResultBucketInterface
     {
         $this->logger->error(
             $response->getMessage(),
             [
-                'resource' => 'getV1CategoriesCategoryId',
+                'resource' => 'getV1ProductsAttributesAttributeCodeOptions',
                 'method' => 'get',
             ],
         );
@@ -54,14 +55,14 @@ final readonly class CategoryLookup implements TransformerInterface
     }
 
     /**
-     * @return RejectionResultBucketInterface<string|null>
+     * @return RejectionResultBucketInterface<OutputType>
      */
     private function rejectInvalidResponse(): RejectionResultBucketInterface
     {
         $this->logger->error(
             $message = 'The result provided by the API client does not match the expected type. The connector compilation may have fetched incompatible versions.',
             [
-                'resource' => 'getV1CategoriesCategoryId',
+                'resource' => 'getV1ProductsAttributesAttributeCodeOptions',
                 'method' => 'get',
             ],
         );
@@ -70,7 +71,7 @@ final readonly class CategoryLookup implements TransformerInterface
     }
 
     /**
-     * @param array<InputType> $line
+     * @param InputType $line
      *
      * @return OutputType
      */
@@ -90,13 +91,13 @@ final readonly class CategoryLookup implements TransformerInterface
             }
 
             if (null === $line[$this->mappingField]) {
-                $line = yield new AcceptanceResultBucket($line);
+                $line = yield new AcceptanceResultBucket($this->passThrough($line));
                 continue;
             }
 
             try {
-                $lookup = $this->client->getV1CategoriesCategoryId(
-                    categoryId: (int) $line[$this->mappingField],
+                $lookup = $this->client->getV1ProductsAttributesAttributeCodeOptions(
+                    attributeCode: $this->attributeCode,
                 );
 
                 if ($lookup instanceof ErrorResponse) {
@@ -104,16 +105,21 @@ final readonly class CategoryLookup implements TransformerInterface
                     continue;
                 }
 
-                if (!$lookup instanceof CatalogDataCategoryInterface) {
+                if (!\is_array($lookup) || !array_is_list($lookup)) {
                     $line = yield $this->rejectInvalidResponse();
                     continue;
                 }
+
+                $lookup = array_filter(
+                    $lookup,
+                    fn (object $item) => $item->getValue() === $line[$this->mappingField],
+                );
             } catch (NetworkExceptionInterface $exception) {
                 $this->logger->critical(
                     $exception->getMessage(),
                     [
                         'exception' => $exception,
-                        'resource' => 'getV1CategoriesCategoryId',
+                        'resource' => 'getV1ProductsAttributesAttributeCodeOptions',
                         'method' => 'get',
                         'categoryId' => (int) $line[$this->mappingField],
                         'mappingField' => $this->mappingField,
@@ -125,12 +131,12 @@ final readonly class CategoryLookup implements TransformerInterface
                     $this->passThrough($line),
                 );
                 continue;
-            } catch (GetV1CategoriesCategoryIdBadRequestException $exception) {
+            } catch (GetV1ProductsAttributesAttributeCodeOptionsBadRequestException $exception) {
                 $this->logger->error(
                     $exception->getMessage(),
                     [
                         'exception' => $exception,
-                        'resource' => 'getV1CategoriesCategoryId',
+                        'resource' => 'getV1ProductsAttributesAttributeCodeOptions',
                         'method' => 'get',
                         'categoryId' => (int) $line[$this->mappingField],
                         'mappingField' => $this->mappingField,
@@ -147,7 +153,7 @@ final readonly class CategoryLookup implements TransformerInterface
                     $exception->getMessage(),
                     [
                         'exception' => $exception,
-                        'resource' => 'getV1CategoriesCategoryId',
+                        'resource' => 'getV1ProductsAttributesAttributeCodeOptions',
                         'method' => 'get',
                         'categoryId' => (int) $line[$this->mappingField],
                         'mappingField' => $this->mappingField,
@@ -162,7 +168,22 @@ final readonly class CategoryLookup implements TransformerInterface
                 return;
             }
 
-            $output = ($this->mapper)($lookup, $line);
+            reset($lookup);
+            $current = current($lookup);
+            if (\count($lookup) <= 0 || false === $current) {
+                $this->logger->critical(
+                    'The lookup did not find any related resource. The lookup operation had no effect.',
+                    [
+                        'resource' => 'getV1ProductsAttributesAttributeCodeOptions',
+                        'method' => 'get',
+                        'categoryId' => (int) $line[$this->mappingField],
+                        'mappingField' => $this->mappingField,
+                    ],
+                );
+                $line = yield new AcceptanceResultBucket($this->passThrough($line));
+                continue;
+            }
+            $output = ($this->mapper)($current, $line);
 
             $line = yield new AcceptanceResultBucket($output);
         }

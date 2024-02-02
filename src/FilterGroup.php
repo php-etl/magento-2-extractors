@@ -4,48 +4,84 @@ declare(strict_types=1);
 
 namespace Kiboko\Component\Flow\Magento2;
 
+use Kiboko\Component\Flow\Magento2\Filter\FilterInterface;
+use Kiboko\Component\Flow\Magento2\Filter\ScalarFilter;
+
 class FilterGroup
 {
+    /** @var array<array-key,FilterInterface> */
     private array $filters = [];
 
-    public function withFilter(Filter $filter): self
+    public function withFilter(FilterInterface $filter): self
     {
-        $this->filters[] = [
-            'field' => $filter->field,
-            'value' => $filter->value,
-            'condition_type' => $filter->conditionType,
-        ];
+        $this->filters[] = $filter;
 
         return $this;
     }
 
-    public function withFilters(Filter ...$filters): self
+    public function withFilters(FilterInterface ...$filters): self
     {
-        array_walk($filters, fn (Filter $filter) => $this->filters[] = [
-            'field' => $filter->field,
-            'value' => $filter->value,
-            'condition_type' => $filter->conditionType,
-        ]);
+        array_push($this->filters, ...$filters);
 
         return $this;
     }
 
-    public function compileFilters(int $groupIndex = 0): array
+    /**
+     * @param array<string,string> $parameters
+     *
+     * @return \Traversable<int,array<string,string>>
+     */
+    public function walkFilters(array $parameters, int $groupIndex = 0): \Traversable
     {
-        return array_merge(...array_map(fn (array $item, int $key) => [
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][field]', $groupIndex, $key) => $item['field'],
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][value]', $groupIndex, $key) => $item['value'],
-            sprintf('searchCriteria[filterGroups][%s][filters][%s][conditionType]', $groupIndex, $key) => $item['condition_type'],
-        ], $this->filters, array_keys($this->filters)));
+        if (\count($this->filters) < 1) {
+            return;
+        }
+
+        yield from $this->buildFilters($parameters, $groupIndex, 1, ...$this->filters);
     }
 
-    public function greaterThan(string $field, mixed $value): self
+    /**
+     * @param array<string,string> $parameters
+     *
+     * @return \Traversable<int,array<string,string>>
+     */
+    private function buildFilters(array $parameters, int $groupIndex, int $filterIndex, FilterInterface $first, FilterInterface ...$next): \Traversable
     {
-        return $this->withFilter(new Filter($field, 'gt', $value));
+        foreach ($first as $current) {
+            $childParameters = [
+                ...$parameters,
+                ...[
+                    sprintf('searchCriteria[filterGroups][%s][filters][%s][field]', $groupIndex, $filterIndex) => $current['field'],
+                    sprintf('searchCriteria[filterGroups][%s][filters][%s][value]', $groupIndex, $filterIndex) => $current['value'],
+                    sprintf('searchCriteria[filterGroups][%s][filters][%s][conditionType]', $groupIndex, $filterIndex) => $current['conditionType'],
+                ],
+            ];
+
+            if (\count($next) >= 1) {
+                yield from $this->buildFilters($childParameters, $groupIndex, $filterIndex + 1, ...$next);
+            } else {
+                yield $childParameters;
+            }
+        }
     }
 
-    public function greaterThanEqual(string $field, mixed $value): self
+    public function greaterThan(string $field, \DateTimeInterface|float|int|string $value): self
     {
-        return $this->withFilter(new Filter($field, 'gteq', $value));
+        return $this->withFilter(new ScalarFilter($field, 'gt', $value));
+    }
+
+    public function lowerThan(string $field, \DateTimeInterface|float|int|string $value): self
+    {
+        return $this->withFilter(new ScalarFilter($field, 'lt', $value));
+    }
+
+    public function greaterThanOrEqual(string $field, \DateTimeInterface|float|int|string $value): self
+    {
+        return $this->withFilter(new ScalarFilter($field, 'gteq', $value));
+    }
+
+    public function lowerThanOrEqual(string $field, \DateTimeInterface|float|int|string $value): self
+    {
+        return $this->withFilter(new ScalarFilter($field, 'lteq', $value));
     }
 }
