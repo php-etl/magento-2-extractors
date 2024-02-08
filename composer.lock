@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "032582e526fc85372024e11317f4a7be",
+    "content-hash": "de156730306f5951ab27d8facb6802cf",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -618,17 +618,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-etl/magento2-api-client.git",
-                "reference": "8997167f00c6ea2f939aac95b9f4810ef43fb4a3"
+                "reference": "0ecc3a7bd084e140351959557c336e19f7d0afe0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/8997167f00c6ea2f939aac95b9f4810ef43fb4a3",
-                "reference": "8997167f00c6ea2f939aac95b9f4810ef43fb4a3",
+                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/0ecc3a7bd084e140351959557c336e19f7d0afe0",
+                "reference": "0ecc3a7bd084e140351959557c336e19f7d0afe0",
                 "shasum": ""
             },
             "require": {
                 "jane-php/open-api-runtime": "^7.3",
-                "php": "^8.0"
+                "php": "^8.1",
+                "symfony/serializer": "^6.0"
             },
             "require-dev": {
                 "jane-php/open-api-3": "^7.3",
@@ -664,7 +665,7 @@
                 "issues": "https://github.com/php-etl/magento2-api-client/issues",
                 "source": "https://github.com/php-etl/magento2-api-client/tree/main"
             },
-            "time": "2022-09-23T08:47:45+00:00"
+            "time": "2024-02-08T13:39:21+00:00"
         },
         {
             "name": "php-etl/mapping-contracts",
