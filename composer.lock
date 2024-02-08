@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "971b575cae686edbfb95693562fcdba5",
+    "content-hash": "de156730306f5951ab27d8facb6802cf",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -614,27 +614,28 @@
         },
         {
             "name": "php-etl/magento2-api-client",
-            "version": "2.4.x-dev",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-etl/magento2-api-client.git",
-                "reference": "a5d87f2570540e3dbaf19066a81b0cacf84717f8"
+                "reference": "0ecc3a7bd084e140351959557c336e19f7d0afe0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/a5d87f2570540e3dbaf19066a81b0cacf84717f8",
-                "reference": "a5d87f2570540e3dbaf19066a81b0cacf84717f8",
+                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/0ecc3a7bd084e140351959557c336e19f7d0afe0",
+                "reference": "0ecc3a7bd084e140351959557c336e19f7d0afe0",
                 "shasum": ""
             },
             "require": {
                 "jane-php/open-api-runtime": "^7.3",
-                "php": "^8.0"
+                "php": "^8.1",
+                "symfony/serializer": "^6.0"
             },
             "require-dev": {
-                "jane-php/open-api-2": "^7.5",
-                "phpunit/phpunit": "^9.5",
-                "rector/rector": "^0.15"
+                "jane-php/open-api-3": "^7.3",
+                "phpunit/phpunit": "^9.5"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -643,10 +644,10 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Kiboko\\Magento\\": [
-                        "src/",
-                        "generated/"
-                    ]
+                    "Kiboko\\Magento\\V2_1\\": "src/v2_1",
+                    "Kiboko\\Magento\\V2_2\\": "src/v2_2",
+                    "Kiboko\\Magento\\V2_3\\": "src/v2_3",
+                    "Kiboko\\Magento\\V2_4\\": "src/v2_4"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -662,9 +663,9 @@
             "description": "This package provides Jane-PHP generated API models and client based on the OpenAPI specification for Magento 2.3.x",
             "support": {
                 "issues": "https://github.com/php-etl/magento2-api-client/issues",
-                "source": "https://github.com/php-etl/magento2-api-client/tree/2.4"
+                "source": "https://github.com/php-etl/magento2-api-client/tree/main"
             },
-            "time": "2024-02-01T15:52:31+00:00"
+            "time": "2024-02-08T13:39:21+00:00"
         },
         {
             "name": "php-etl/mapping-contracts",
@@ -4641,9 +4642,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "php-etl/magento2-api-client": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
