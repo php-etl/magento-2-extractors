@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "de156730306f5951ab27d8facb6802cf",
+    "content-hash": "971b575cae686edbfb95693562fcdba5",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -614,28 +614,28 @@
         },
         {
             "name": "php-etl/magento2-api-client",
-            "version": "dev-main",
+            "version": "2.4.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-etl/magento2-api-client.git",
-                "reference": "0ecc3a7bd084e140351959557c336e19f7d0afe0"
+                "reference": "8cd739e2b1da61abcf22ba150d53874854c8cc11"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/0ecc3a7bd084e140351959557c336e19f7d0afe0",
-                "reference": "0ecc3a7bd084e140351959557c336e19f7d0afe0",
+                "url": "https://api.github.com/repos/php-etl/magento2-api-client/zipball/8cd739e2b1da61abcf22ba150d53874854c8cc11",
+                "reference": "8cd739e2b1da61abcf22ba150d53874854c8cc11",
                 "shasum": ""
             },
             "require": {
                 "jane-php/open-api-runtime": "^7.3",
-                "php": "^8.1",
+                "php": "^8.0",
                 "symfony/serializer": "^6.0"
             },
             "require-dev": {
-                "jane-php/open-api-3": "^7.3",
-                "phpunit/phpunit": "^9.5"
+                "jane-php/open-api-2": "^7.5",
+                "phpunit/phpunit": "^9.5",
+                "rector/rector": "^0.15"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -644,10 +644,10 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Kiboko\\Magento\\V2_1\\": "src/v2_1",
-                    "Kiboko\\Magento\\V2_2\\": "src/v2_2",
-                    "Kiboko\\Magento\\V2_3\\": "src/v2_3",
-                    "Kiboko\\Magento\\V2_4\\": "src/v2_4"
+                    "Kiboko\\Magento\\": [
+                        "src/",
+                        "generated/"
+                    ]
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -663,9 +663,9 @@
             "description": "This package provides Jane-PHP generated API models and client based on the OpenAPI specification for Magento 2.3.x",
             "support": {
                 "issues": "https://github.com/php-etl/magento2-api-client/issues",
-                "source": "https://github.com/php-etl/magento2-api-client/tree/main"
+                "source": "https://github.com/php-etl/magento2-api-client/tree/2.4"
             },
-            "time": "2024-02-08T13:39:21+00:00"
+            "time": "2024-02-09T10:10:21+00:00"
         },
         {
             "name": "php-etl/mapping-contracts",
@@ -778,21 +778,22 @@
         },
         {
             "name": "php-etl/pipeline-contracts",
-            "version": "v0.4.0",
+            "version": "v0.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-etl/pipeline-contracts.git",
-                "reference": "499da7f0d7340cf90dd47f76426e952eb23bf6c2"
+                "reference": "5a37ebe518d4d85aa964c74b9da068d29e2e9b92"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-etl/pipeline-contracts/zipball/499da7f0d7340cf90dd47f76426e952eb23bf6c2",
-                "reference": "499da7f0d7340cf90dd47f76426e952eb23bf6c2",
+                "url": "https://api.github.com/repos/php-etl/pipeline-contracts/zipball/5a37ebe518d4d85aa964c74b9da068d29e2e9b92",
+                "reference": "5a37ebe518d4d85aa964c74b9da068d29e2e9b92",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.2",
-                "php-etl/bucket-contracts": "0.2.*"
+                "php-etl/bucket-contracts": "0.2.*",
+                "php-etl/satellite-contracts": "0.1.*"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.0",
@@ -827,9 +828,61 @@
             "description": "This library describes contracts for the Extract-Transform-Load pattern.",
             "support": {
                 "issues": "https://github.com/php-etl/pipeline-contracts/issues",
-                "source": "https://github.com/php-etl/pipeline-contracts/tree/v0.4.0"
+                "source": "https://github.com/php-etl/pipeline-contracts/tree/v0.4.2"
             },
-            "time": "2023-04-17T13:08:18+00:00"
+            "time": "2023-06-12T09:38:03+00:00"
+        },
+        {
+            "name": "php-etl/satellite-contracts",
+            "version": "v0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-etl/satellite-contracts.git",
+                "reference": "d2be591800f42e460a59d864888aedf00f111dd7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-etl/satellite-contracts/zipball/d2be591800f42e460a59d864888aedf00f111dd7",
+                "reference": "d2be591800f42e460a59d864888aedf00f111dd7",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "rector/rector": "^0.15"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kiboko\\Contract\\Satellite\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kiboko SAS",
+                    "homepage": "http://kiboko.fr"
+                },
+                {
+                    "name": "Grégory Planchat",
+                    "email": "gregory@kiboko.fr"
+                }
+            ],
+            "description": "This library describes contracts for defining satellite formats",
+            "support": {
+                "issues": "https://github.com/php-etl/satellite-contracts/issues",
+                "source": "https://github.com/php-etl/satellite-contracts/tree/v0.1.1"
+            },
+            "time": "2023-11-20T10:48:56+00:00"
         },
         {
             "name": "php-http/client-common",
@@ -4642,7 +4695,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "php-etl/magento2-api-client": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
