@@ -90,7 +90,7 @@ final readonly class CategoryLookup implements TransformerInterface
             }
 
             if (null === $line[$this->mappingField]) {
-                $line = yield new AcceptanceResultBucket($line);
+                $line = yield new AcceptanceResultBucket($this->passThrough($line));
                 continue;
             }
 

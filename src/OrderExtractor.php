@@ -34,7 +34,7 @@ final readonly class OrderExtractor implements ExtractorInterface
     /**
      * @param array<string,string> $parameters
      *
-     * @return array<string,string>
+     * @return array<string,int|string>
      */
     private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
     {

@@ -33,14 +33,14 @@ final readonly class InvoiceExtractor implements ExtractorInterface
     /**
      * @param array<string,string> $parameters
      *
-     * @return array<string,string>
+     * @return array<string,int|string>
      */
     private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
     {
         return [
             ...$parameters,
-            'searchCriteria[currentPage]' => (string) $currentPage,
-            'searchCriteria[pageSize]' => (string) $pageSize,
+            'searchCriteria[currentPage]' => $currentPage,
+            'searchCriteria[pageSize]' => $pageSize,
         ];
     }
 

@@ -7,7 +7,6 @@ namespace Kiboko\Component\Flow\Magento2;
 use Kiboko\Component\Bucket\AcceptanceResultBucket;
 use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Bucket\RejectionResultBucketInterface;
-use Kiboko\Contract\Bucket\ResultBucketInterface;
 use Kiboko\Contract\Pipeline\ExtractorInterface;
 use Kiboko\Magento\Client;
 use Kiboko\Magento\Exception\GetV1CustomersSearchInternalServerErrorException;
@@ -35,14 +34,14 @@ final readonly class CustomerExtractor implements ExtractorInterface
     /**
      * @param array<string,string> $parameters
      *
-     * @return array<string,string>
+     * @return array<string,int|string>
      */
     private function applyPagination(array $parameters, int $currentPage, int $pageSize): array
     {
         return [
             ...$parameters,
-            'searchCriteria[currentPage]' => (string) $currentPage,
-            'searchCriteria[pageSize]' => (string) $pageSize,
+            'searchCriteria[currentPage]' => $currentPage,
+            'searchCriteria[pageSize]' => $pageSize,
         ];
     }
 
