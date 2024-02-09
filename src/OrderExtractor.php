@@ -9,7 +9,6 @@ use Kiboko\Component\Bucket\RejectionResultBucket;
 use Kiboko\Contract\Bucket\RejectionResultBucketInterface;
 use Kiboko\Contract\Pipeline\ExtractorInterface;
 use Kiboko\Magento\Client;
-use Kiboko\Magento\Endpoint\GetV1Orders;
 use Kiboko\Magento\Exception\GetV1OrdersUnauthorizedException;
 use Kiboko\Magento\Exception\UnexpectedStatusCodeException;
 use Kiboko\Magento\Model\ErrorResponse;

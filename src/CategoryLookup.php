@@ -22,7 +22,7 @@ use Psr\Log\LoggerInterface;
  * @template InputType of array
  * @template OutputType of InputType|array
  *
- * @implements TransformerInterface<InputType>
+ * @implements TransformerInterface<InputType, OutputType>
  */
 final readonly class CategoryLookup implements TransformerInterface
 {
@@ -38,7 +38,7 @@ final readonly class CategoryLookup implements TransformerInterface
     }
 
     /**
-     * @return RejectionResultBucketInterface<string|null>
+     * @return RejectionResultBucketInterface<OutputType>
      */
     private function rejectErrorResponse(ErrorResponse $response): RejectionResultBucketInterface
     {
@@ -54,7 +54,7 @@ final readonly class CategoryLookup implements TransformerInterface
     }
 
     /**
-     * @return RejectionResultBucketInterface<string|null>
+     * @return RejectionResultBucketInterface<OutputType>
      */
     private function rejectInvalidResponse(): RejectionResultBucketInterface
     {
@@ -90,7 +90,7 @@ final readonly class CategoryLookup implements TransformerInterface
             }
 
             if (null === $line[$this->mappingField]) {
-                $line = yield new AcceptanceResultBucket($line);
+                $line = yield new AcceptanceResultBucket($this->passThrough($line));
                 continue;
             }
 
